@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 150" width="560" height="150" role="img" aria-label="RiskLab — Risk Laboratory">
+  <defs>
+    <marker id="rli-arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#ffffff"></path>
+    </marker>
+  </defs>
+  <g transform="translate(6,7) scale(0.7333)">
+    <g stroke="#ffffff" stroke-width="5.4" fill="none" stroke-linecap="round" marker-end="url(#rli-arw)">
+      <line x1="57.2" y1="57.1" x2="78.2" y2="41.9"></line>
+      <line x1="121.8" y1="41.9" x2="142.8" y2="57.1"></line>
+      <line x1="156.3" y1="98.7" x2="148.3" y2="123.3"></line>
+      <line x1="113.0" y1="149.0" x2="87.0" y2="149.0"></line>
+      <line x1="51.7" y1="123.3" x2="43.7" y2="98.7"></line>
+    </g>
+    <polygon points="100,6 120,26 100,46 80,26" fill="#ED1C24"></polygon>
+    <rect x="145.7" y="54" width="38" height="38" fill="#D24FB0"></rect>
+    <polygon points="140,131 157,164 123,164" fill="#00A551"></polygon>
+    <circle cx="60" cy="149" r="19" fill="#0F6FBE"></circle>
+    <polygon points="14.3,73 24.8,54.8 45.8,54.8 56.3,73 45.8,91.2 24.8,91.2" fill="#F4B183" stroke="#9CC3E4" stroke-width="1.6"></polygon>
+  </g>
+  <text x="168" y="76" font-family="&#39;IBM Plex Sans&#39;, Verdana, sans-serif" font-weight="700" font-size="56" letter-spacing="-1.5" fill="#ffffff">RiskLab</text>
+  <text x="170" y="106" font-family="&#39;IBM Plex Mono&#39;, monospace" font-weight="500" font-size="15.5" letter-spacing="4.2" fill="#9BB0C4">RISK  LABORATORY</text>
+</svg>

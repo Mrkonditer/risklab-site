@@ -309,6 +309,13 @@ button { font-family: inherit; }
   background: var(--ink); color: #fff;
   position: relative; overflow: hidden;
 }
+.hero__photo {
+  position: absolute; inset: 0;
+  background: url('images/hero-bg.jpg') center/cover no-repeat;
+  opacity: 0.18;
+  mix-blend-mode: luminosity;
+  pointer-events: none;
+}
 .hero__watermark {
   position: absolute; top: -130px; right: -90px;
   width: 480px; height: 480px; opacity: 0.08; pointer-events: none;
@@ -643,6 +650,7 @@ button { font-family: inherit; }
 
 <!-- ===== HERO ===== -->
 <section class="hero">
+  <div class="hero__photo"></div>
   <div class="hero__watermark">
     <img src="assets/logo-cycle.svg" alt="">
   </div>
@@ -690,31 +698,37 @@ button { font-family: inherit; }
     </div>
     <div class="problem-grid">
       <div class="rl-card rl-card--pad">
+        <img src="images/icon-analytics.svg" alt="" style="width:44px;height:44px;opacity:0.7;margin-bottom:14px;display:block;">
         <span class="problem-num">01</span>
         <h3 class="problem-h3">Рост неопределённости</h3>
         <p class="problem-p">Повышение уровня неопределённости при реализации новых проектов и программ.</p>
       </div>
       <div class="rl-card rl-card--pad">
+        <img src="images/icon-speed.svg" alt="" style="width:44px;height:44px;opacity:0.7;margin-bottom:14px;display:block;">
         <span class="problem-num">02</span>
         <h3 class="problem-h3">Сжатые сроки оценки</h3>
         <p class="problem-p">Потребность в сокращении сроков разработки и оценки инвестиционных проектов.</p>
       </div>
       <div class="rl-card rl-card--pad">
+        <img src="images/icon-chain.svg" alt="" style="width:44px;height:44px;opacity:0.7;margin-bottom:14px;display:block;">
         <span class="problem-num">03</span>
         <h3 class="problem-h3">Дефицит компетенций</h3>
         <p class="problem-p">Нехватка высококвалифицированных специалистов по управлению рисками.</p>
       </div>
       <div class="rl-card rl-card--pad">
+        <img src="images/icon-paper.svg" alt="" style="width:44px;height:44px;opacity:0.7;margin-bottom:14px;display:block;">
         <span class="problem-num">04</span>
         <h3 class="problem-h3">Риск-ориентированный надзор</h3>
         <p class="problem-p">Законодательное закрепление риск-ориентированного подхода в госконтроле.</p>
       </div>
       <div class="rl-card rl-card--pad">
+        <img src="images/icon-analytics.svg" alt="" style="width:44px;height:44px;opacity:0.7;margin-bottom:14px;display:block;">
         <span class="problem-num">05</span>
         <h3 class="problem-h3">Требования ESG</h3>
         <p class="problem-p">Глобальное расширение требований к экологическим и корпоративным рискам.</p>
       </div>
       <div class="rl-card rl-card--pad">
+        <img src="images/icon-chain.svg" alt="" style="width:44px;height:44px;opacity:0.7;margin-bottom:14px;display:block;">
         <span class="problem-num">06</span>
         <h3 class="problem-h3">Нет отечественного решения</h3>
         <p class="problem-p">Отсутствие на рынке РФ комплексного решения автоматизации управления рисками.</p>

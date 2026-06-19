@@ -152,7 +152,8 @@ async function init() {
   document.getElementById('userLabel').textContent = name;
 
   // If already completed 2+ surveys, redirect to create
-  if (PROFILE.surveys_completed >= 2) {
+  const answerMode = new URLSearchParams(location.search).get('mode') === 'answer';
+  if (PROFILE.surveys_completed >= 2 && !answerMode) {
     window.location.href = 'create.html';
     return;
   }

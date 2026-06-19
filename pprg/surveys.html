@@ -252,6 +252,15 @@ function render() {
         </div>
         <h2>ОБА ОПРОСА ПРОЙДЕНЫ</h2>
         <p>Вы успешно прошли 2 опроса. Теперь доступно создание собственного опроса для проверки вашей рыночной гипотезы.</p>
+
+        <div style="background:rgba(107,26,94,0.06);border:1.5px solid rgba(107,26,94,0.15);border-radius:14px;padding:20px 22px;margin:20px 0;text-align:left">
+          <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B1A5E;margin-bottom:10px">⚡ Как работает продвижение</div>
+          <div style="font-size:13.5px;color:#16181d;line-height:1.7">
+            Ваш опрос показывается другим участникам <strong>в первую очередь</strong>, пока вы сами активно отвечаете на чужие.<br><br>
+            Перестали отвечать — опрос уходит в конец очереди. Чем активнее вы участвуете в платформе, тем больше ответов получает ваша гипотеза.
+          </div>
+        </div>
+
         <button class="big-btn" onclick="window.location.href='create.html'">СОЗДАТЬ СВОЙ ОПРОС</button>
         <button class="sec-btn" onclick="window.location.href='cabinet.html'">Перейти в кабинет</button>
       </div>`;
@@ -278,6 +287,20 @@ async function selectIndustry() {
     .order('created_at', { ascending: false });
 
   const pool = (realSvs || []).filter(s => !answeredIds.includes(s.id));
+
+  // Sort by owner's last_answered_at DESC — active users get priority
+  if (pool.length > 0) {
+    const ownerIds = [...new Set(pool.map(s => s.user_id))];
+    const { data: ownerProfiles } = await sb.from('profiles')
+      .select('id, last_answered_at')
+      .in('id', ownerIds);
+    const profileMap = Object.fromEntries((ownerProfiles || []).map(p => [p.id, p.last_answered_at]));
+    pool.sort((a, b) => {
+      const ta = profileMap[a.user_id] ? new Date(profileMap[a.user_id]).getTime() : 0;
+      const tb = profileMap[b.user_id] ? new Date(profileMap[b.user_id]).getTime() : 0;
+      return tb - ta;
+    });
+  }
 
   let selected = pool.slice(0, 2);
 

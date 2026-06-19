@@ -232,7 +232,19 @@ function renderTab() {
     </div>`;
   }
 
+  const activeSurveyCount = MY_SURVEYS.filter(s => s.is_active).length;
+  const motiBanner = activeSurveyCount > 0 ? `
+    <div style="background:rgba(107,26,94,0.06);border:1.5px solid rgba(107,26,94,0.15);border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+      <div style="font-size:22px;flex-shrink:0">⚡</div>
+      <div style="font-size:13px;color:#16181d;line-height:1.6">
+        <strong>Ваш опрос показывается активным участникам первым.</strong><br>
+        Продолжайте отвечать на чужие опросы — чем активнее вы, тем выше ваш приоритет в очереди.
+        <a href="surveys.html" style="color:#6B1A5E;font-weight:700;margin-left:6px">Ответить на опрос →</a>
+      </div>
+    </div>` : '';
+
   return `<div class="surveys-list">
+    ${motiBanner}
     ${MY_SURVEYS.map((sv, idx) => renderSurveyCard(sv, idx)).join('')}
   </div>`;
 }

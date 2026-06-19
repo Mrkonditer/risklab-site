@@ -242,7 +242,7 @@ function render() {
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00A551" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <h2>ОПРОС ЗАВЕРШЁН</h2>
-        <p>Отлично! Первый опрос пройден. Осталось ответить ещё на один опрос, после чего вы сможете создать свой.</p>
+        <p>${INITIAL_SURVEYS_COMPLETED >= 2 ? 'Отлично! Первый опрос пройден. Осталось ответить ещё на один.' : 'Отлично! Первый опрос пройден. Осталось ответить ещё на один опрос, после чего вы сможете создать свой.'}</p>
         <button class="big-btn" onclick="startNextSurvey()">НАЧАТЬ ПРОХОЖДЕНИЕ ОПРОСА 2 из 2</button>
       </div>`;
 

@@ -135,8 +135,6 @@ async function init() {
   }));
 
   render();
-  // Auto-start timer updates
-  setInterval(updateTimers, 1000);
 }
 
 function render() {
@@ -263,7 +261,7 @@ function renderSurveyCard(sv, idx) {
         </div>
         ${sv.is_active ? `
         <div class="sv-results__footer">
-          <span class="timer-badge" id="timer${idx}">⏱ ${getTimer(sv.created_at)}</span>
+          <span class="timer-badge">📅 ${new Date(sv.created_at).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</span>
           <button class="close-btn" onclick="closeSurvey('${sv.id}', ${idx})">
             ЗАВЕРШЕНИЕ ПРОЦЕДУРЫ МОНИТОРИНГА
           </button>

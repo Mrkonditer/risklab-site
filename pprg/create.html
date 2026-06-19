@@ -67,6 +67,8 @@
     .q-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--slate-400); min-width: 20px; padding-top: 14px; }
     .q-input { flex: 1; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; resize: none; min-height: 42px; transition: border-color 150ms; }
     .q-input:focus { border-color: var(--ink); }
+    .q-del { flex-shrink: 0; margin-top: 10px; width: 28px; height: 28px; border: none; background: none; color: var(--slate-400); font-size: 14px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+    .q-del:hover { background: rgba(237,28,36,0.08); color: #c0392b; }
     .q-input::placeholder { color: var(--slate-400); }
 
     .form-footer { padding: 20px 32px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
@@ -186,14 +188,18 @@ function render() {
           <input class="form-input" id="surveyTitle" type="text" placeholder="Например: Предпочтения потребителей при выборе ...">
         </div>
         <div class="form-group">
-          <div class="form-label">5 вопросов с ответами ДА / НЕТ</div>
-          <div class="questions-block">
-            ${[1,2,3,4,5].map(n => `
-              <div class="q-row">
-                <span class="q-num">0${n}</span>
+          <div class="form-label">Вопросы с ответами ДА / НЕТ <span class="tag">от 3 до 10</span></div>
+          <div class="questions-block" id="questionsBlock">
+            ${[1,2,3].map(n => `
+              <div class="q-row" id="qrow${n}">
+                <span class="q-num">${String(n).padStart(2,'0')}</span>
                 <textarea class="q-input" id="q${n}" placeholder="ВОПРОС № ${n}" rows="2"></textarea>
+                ${n > 3 ? `<button type="button" class="q-del" onclick="removeQuestion(${n})" title="Удалить">✕</button>` : ''}
               </div>`).join('')}
           </div>
+          <button type="button" id="addQBtn" onclick="addQuestion()" style="margin-top:10px;padding:8px 16px;background:none;border:1.5px dashed var(--border);border-radius:8px;font-size:13px;color:var(--slate-600);cursor:pointer;font-family:inherit;width:100%">
+            + Добавить вопрос
+          </button>
         </div>
       </div>
       <div class="form-footer">
@@ -204,14 +210,50 @@ function render() {
     </div>`;
 }
 
+let qCount = 3;
+
+function addQuestion() {
+  if (qCount >= 10) return;
+  qCount++;
+  const block = document.getElementById('questionsBlock');
+  const row = document.createElement('div');
+  row.className = 'q-row';
+  row.id = 'qrow' + qCount;
+  row.innerHTML = `
+    <span class="q-num">${String(qCount).padStart(2,'0')}</span>
+    <textarea class="q-input" id="q${qCount}" placeholder="ВОПРОС № ${qCount}" rows="2"></textarea>
+    <button type="button" class="q-del" onclick="removeQuestion(${qCount})" title="Удалить">✕</button>`;
+  block.appendChild(row);
+  if (qCount >= 10) document.getElementById('addQBtn').style.display = 'none';
+}
+
+function removeQuestion(n) {
+  if (qCount <= 3) return;
+  document.getElementById('qrow' + n).remove();
+  // Re-number remaining rows
+  const rows = document.querySelectorAll('#questionsBlock .q-row');
+  rows.forEach((row, i) => {
+    const num = i + 1;
+    row.id = 'qrow' + num;
+    row.querySelector('.q-num').textContent = String(num).padStart(2, '0');
+    row.querySelector('textarea').id = 'q' + num;
+    row.querySelector('textarea').placeholder = 'ВОПРОС № ' + num;
+    const delBtn = row.querySelector('.q-del');
+    if (delBtn) delBtn.setAttribute('onclick', `removeQuestion(${num})`);
+  });
+  qCount--;
+  document.getElementById('addQBtn').style.display = '';
+}
+
 async function submitSurvey() {
   const industryId = document.getElementById('indSelect').value;
   const title = document.getElementById('surveyTitle').value.trim();
-  const questions = [1,2,3,4,5].map(n => document.getElementById('q' + n).value.trim());
+  const questions = Array.from(document.querySelectorAll('#questionsBlock textarea'))
+    .map(t => t.value.trim()).filter(t => t);
 
   if (!industryId) return alert('Выберите отрасль');
   if (!title) return alert('Введите название опроса');
-  if (questions.some(q => !q)) return alert('Заполните все 5 вопросов');
+  if (questions.length < 3) return alert('Добавьте минимум 3 вопроса');
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = 'Сохранение...';

@@ -1,19 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 180" width="200" height="180" role="img" aria-label="RiskLab cycle mark">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="RiskLab cycle mark">
   <defs>
-    <marker id="rl-arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto-start-reverse">
-      <path d="M0,0 L10,5 L0,10 L3,5 Z" fill="#16181d"></path>
+    <marker id="rlc-arr" viewBox="0 0 10 8" refX="9" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+      <polygon points="0,0 10,4 0,8" fill="#1a1a1a"/>
     </marker>
   </defs>
-  <g stroke="#16181d" stroke-width="5.4" fill="none" stroke-linecap="round" marker-end="url(#rl-arw)">
-    <line x1="57.2" y1="57.1" x2="78.2" y2="41.9"></line>
-    <line x1="121.8" y1="41.9" x2="142.8" y2="57.1"></line>
-    <line x1="156.3" y1="98.7" x2="148.3" y2="123.3"></line>
-    <line x1="113.0" y1="149.0" x2="87.0" y2="149.0"></line>
-    <line x1="51.7" y1="123.3" x2="43.7" y2="98.7"></line>
-  </g>
-  <polygon points="100,6 120,26 100,46 80,26" fill="#ED1C24"></polygon>
-  <rect x="145.7" y="54" width="38" height="38" fill="#D24FB0"></rect>
-  <polygon points="140,131 157,164 123,164" fill="#00A551"></polygon>
-  <circle cx="60" cy="149" r="19" fill="#0F6FBE"></circle>
-  <polygon points="14.3,73 24.8,54.8 45.8,54.8 56.3,73 45.8,91.2 24.8,91.2" fill="#F4B183" stroke="#9CC3E4" stroke-width="1.6"></polygon>
+
+  <!-- Arrow 1: Diamond → Square -->
+  <path d="M 118 40 Q 138 48 146 68" stroke="#1a1a1a" stroke-width="4.5" fill="none" stroke-linecap="round" marker-end="url(#rlc-arr)"/>
+  <!-- Arrow 2: Square → Triangle -->
+  <path d="M 165 90 Q 172 118 148 136" stroke="#1a1a1a" stroke-width="4.5" fill="none" stroke-linecap="round" marker-end="url(#rlc-arr)"/>
+  <!-- Arrow 3: Triangle → Circle -->
+  <path d="M 120 158 Q 100 170 80 153" stroke="#1a1a1a" stroke-width="4.5" fill="none" stroke-linecap="round" marker-end="url(#rlc-arr)"/>
+  <!-- Arrow 4: Circle → Hexagon -->
+  <path d="M 54 140 Q 40 118 52 91" stroke="#1a1a1a" stroke-width="4.5" fill="none" stroke-linecap="round" marker-end="url(#rlc-arr)"/>
+  <!-- Arrow 5: Hexagon → Diamond -->
+  <path d="M 41 67 Q 50 44 80 39" stroke="#1a1a1a" stroke-width="4.5" fill="none" stroke-linecap="round" marker-end="url(#rlc-arr)"/>
+
+  <!-- Red Diamond (top) -->
+  <polygon points="100,18 120,38 100,58 80,38" fill="#ED1C24"/>
+  <!-- Purple Square (upper-right) -->
+  <rect x="148" y="70" width="22" height="22" rx="2" fill="#8B24A8"/>
+  <!-- Green Triangle (lower-right) -->
+  <polygon points="136,124 121,161 151,161" fill="#00A551"/>
+  <!-- Blue Circle (lower-left) -->
+  <circle cx="64" cy="150" r="14" fill="#0F6FBE"/>
+  <!-- Gold Hexagon (upper-left) -->
+  <polygon points="41,67 53,74 53,88 41,95 29,88 29,74" fill="#D4A020"/>
+
+  <!-- RISKLAB text -->
+  <text x="100" y="105" font-family="'Arial Black','Helvetica Neue',Arial,sans-serif" font-weight="900" font-size="12.5" text-anchor="middle" fill="#1a1a1a" letter-spacing="0.4">RISKLAB</text>
 </svg>

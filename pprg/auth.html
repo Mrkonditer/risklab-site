@@ -145,6 +145,10 @@ const sb = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2R3gto'
 );
 
+// Open correct tab from URL param
+const _tab = new URLSearchParams(location.search).get('tab');
+if (_tab === 'register') switchTab('register');
+
 // Redirect if already logged in
 sb.auth.getSession().then(({ data }) => {
   if (data.session) {

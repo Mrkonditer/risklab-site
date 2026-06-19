@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Проверка Гипотезы — RiskLab</title>
   <meta name="description" content="Электронная платформа проверки рыночных гипотез — узнайте, нужен ли ваш продукт рынку">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap&subset=cyrillic,latin" rel="stylesheet">
   <style>
@@ -37,6 +38,20 @@
       height: 70px; display: flex; align-items: center; gap: 20px; padding: 0 28px;
     }
     .site-header__logo img { height: 56px; }
+    /* user dropdown (same as index.html) */
+    .user-menu { position: relative; }
+    .user-trigger { display: flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; border: 1.5px solid #E2E6EC; border-radius: 100px; background: #fff; cursor: pointer; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #16181d; transition: background 140ms; }
+    .user-trigger:hover { background: #F1F3F6; }
+    .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+    .user-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: #fff; border: 1.5px solid #E2E6EC; border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.12); min-width: 210px; overflow: hidden; z-index: 200; display: none; }
+    .user-menu.open .user-dropdown { display: block; }
+    .user-dropdown__head { padding: 14px 16px; border-bottom: 1px solid #E2E6EC; }
+    .user-dropdown__name { font-size: 14px; font-weight: 700; }
+    .user-dropdown__email { font-size: 12px; color: #8D99A8; margin-top: 2px; }
+    .user-dropdown__item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; font-size: 13.5px; font-weight: 500; color: #16181d; cursor: pointer; text-decoration: none; transition: background 120ms; width: 100%; background: none; border: none; font-family: inherit; text-align: left; }
+    .user-dropdown__item:hover { background: #F1F3F6; }
+    .user-dropdown__divider { height: 1px; background: #E2E6EC; margin: 4px 0; }
+    .user-dropdown__item--danger { color: #c0392b; }
     .site-header__back {
       display: inline-flex; align-items: center; gap: 8px;
       font-size: 13.5px; font-weight: 500; color: var(--slate-600);
@@ -312,6 +327,29 @@
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       На главную
     </a>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+      <div id="authGuest" style="display:none;gap:6px;align-items:center">
+        <a href="pprg/auth.html?tab=login" class="site-header__back" style="margin-left:0">Войти</a>
+        <a href="pprg/auth.html?tab=register" class="rl-btn" style="padding:6px 14px;background:var(--ink);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">Регистрация</a>
+      </div>
+      <div id="authUser" style="display:none" class="user-menu">
+        <button class="user-trigger" onclick="this.closest('.user-menu').classList.toggle('open')">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <span id="userName">...</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="user-dropdown">
+          <div class="user-dropdown__head">
+            <div class="user-dropdown__name" id="ddName">—</div>
+            <div class="user-dropdown__email" id="ddEmail">—</div>
+          </div>
+          <a href="pprg/cabinet.html" class="user-dropdown__item">🗂 Личный кабинет</a>
+          <a href="pprg/surveys.html" class="user-dropdown__item">✅ Проверка Гипотезы</a>
+          <div class="user-dropdown__divider"></div>
+          <button class="user-dropdown__item user-dropdown__item--danger" onclick="signOut()">↩ Выйти</button>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -600,6 +638,33 @@ function handleSubmit(e) {
   input.disabled = true;
   btn.disabled = true;
 }
+
+// Auth header
+const _sb = supabase.createClient(
+  'https://dbkevxvpyhprmzrrceic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2R3gto'
+);
+function applyAuth(session) {
+  const g = document.getElementById('authGuest');
+  const u = document.getElementById('authUser');
+  if (session) {
+    const name = session.user.user_metadata?.username || session.user.email?.split('@')[0] || '?';
+    document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+    document.getElementById('userName').textContent = name;
+    document.getElementById('ddName').textContent = name;
+    document.getElementById('ddEmail').textContent = session.user.email;
+    g.style.display = 'none'; u.style.display = 'block';
+  } else {
+    g.style.display = 'flex'; u.style.display = 'none';
+  }
+}
+_sb.auth.getSession().then(({ data }) => applyAuth(data.session));
+_sb.auth.onAuthStateChange((_e, s) => applyAuth(s));
+document.addEventListener('click', e => {
+  const m = document.getElementById('authUser');
+  if (m && !m.contains(e.target)) m.classList.remove('open');
+});
+async function signOut() { await _sb.auth.signOut(); location.reload(); }
 </script>
 </body>
 </html>

@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 /* ===== COLOR TOKENS ===== */
 :root {
@@ -559,6 +560,46 @@ button { font-family: inherit; }
 }
 .contact-val { font-size: 15.5px; font-weight: 500; color: var(--text-primary); }
 
+/* ===== USER DROPDOWN ===== */
+.user-menu { position: relative; }
+.user-trigger {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 12px 5px 6px;
+  border: 1.5px solid var(--border-strong); border-radius: 100px;
+  background: var(--white); cursor: pointer;
+  font-family: inherit; font-size: 13.5px; font-weight: 600;
+  color: var(--text-primary); transition: background 140ms;
+}
+.user-trigger:hover { background: var(--slate-50); }
+.user-avatar {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.user-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: #fff; border: 1.5px solid var(--border-strong);
+  border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.12);
+  min-width: 210px; overflow: hidden; z-index: 200;
+  display: none;
+}
+.user-menu.open .user-dropdown { display: block; }
+.user-dropdown__head { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.user-dropdown__name { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+.user-dropdown__email { font-size: 12px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-dropdown__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 16px; font-size: 13.5px; font-weight: 500;
+  color: var(--text-primary); cursor: pointer; text-decoration: none;
+  transition: background 120ms; width: 100%; background: none; border: none; font-family: inherit; text-align: left;
+}
+.user-dropdown__item:hover { background: var(--slate-50); }
+.user-dropdown__item svg { color: var(--text-secondary); flex-shrink: 0; }
+.user-dropdown__item--danger { color: #c0392b; }
+.user-dropdown__item--danger svg { color: #c0392b; }
+.user-dropdown__divider { height: 1px; background: var(--border); margin: 4px 0; }
+
 /* ===== FOOTER ===== */
 .site-footer {
   background: var(--ink); color: rgba(255,255,255,0.6); padding: 40px 28px;
@@ -572,7 +613,7 @@ button { font-family: inherit; }
 /* ===== RESPONSIVE ===== */
 @media (max-width: 900px) {
   .site-header__nav { display: none; }
-  .site-header__actions .rl-btn:first-child { display: none; }
+  .site-header__actions .rl-btn--hide-mobile { display: none; }
   .burger { display: flex; }
 
   .hero__h1 { font-size: 38px; }
@@ -624,8 +665,42 @@ button { font-family: inherit; }
       <a href="#contacts">Контакты</a>
     </nav>
     <div class="site-header__actions">
-      <a href="hypothesis.html" class="rl-btn rl-btn--sm" style="background:var(--cycle-orange);color:var(--ink);border:none;text-decoration:none;">Проверка Гипотезы</a>
-      <button class="rl-btn rl-btn--ghost rl-btn--sm">Войти</button>
+      <a href="hypothesis.html" class="rl-btn rl-btn--sm rl-btn--hide-mobile" style="background:var(--cycle-orange);color:var(--ink);border:none;text-decoration:none;">Проверка Гипотезы</a>
+
+      <!-- Auth: незалогинен -->
+      <div id="authGuest" style="display:none;gap:6px;align-items:center;display:flex">
+        <a href="pprg/auth.html?tab=login" class="rl-btn rl-btn--ghost rl-btn--sm" style="text-decoration:none">Войти</a>
+        <a href="pprg/auth.html?tab=register" class="rl-btn rl-btn--sm" style="text-decoration:none">Регистрация</a>
+      </div>
+
+      <!-- Auth: залогинен -->
+      <div id="authUser" style="display:none" class="user-menu" id="userMenu">
+        <button class="user-trigger" onclick="toggleUserMenu()">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <span id="userName">...</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="user-dropdown">
+          <div class="user-dropdown__head">
+            <div class="user-dropdown__name" id="ddName">—</div>
+            <div class="user-dropdown__email" id="ddEmail">—</div>
+          </div>
+          <a href="pprg/cabinet.html" class="user-dropdown__item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Личный кабинет
+          </a>
+          <a href="pprg/surveys.html" class="user-dropdown__item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Проверка Гипотезы
+          </a>
+          <div class="user-dropdown__divider"></div>
+          <button class="user-dropdown__item user-dropdown__item--danger" onclick="signOut()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Выйти
+          </button>
+        </div>
+      </div>
+
       <button class="rl-btn rl-btn--sm" onclick="scrollToContacts()">
         Запросить демо
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
@@ -643,8 +718,9 @@ button { font-family: inherit; }
     <a href="#team" onclick="closeMenu()">Команда</a>
     <a href="#contacts" onclick="closeMenu()">Контакты</a>
     <div class="mobile-nav__btns">
-      <button class="rl-btn rl-btn--ghost rl-btn--sm">Войти</button>
-      <button class="rl-btn rl-btn--sm">Запросить демо</button>
+      <a href="pprg/auth.html?tab=login" class="rl-btn rl-btn--ghost rl-btn--sm" style="text-decoration:none" id="mobileLogin">Войти</a>
+      <a href="pprg/cabinet.html" class="rl-btn rl-btn--sm" style="text-decoration:none;display:none" id="mobileCabinet">Кабинет</a>
+      <button class="rl-btn rl-btn--sm" onclick="scrollToContacts()">Запросить демо</button>
     </div>
   </nav>
 </header>
@@ -1239,6 +1315,54 @@ function carouselGo(i) {
     else if (dx > 40) carouselPrev();
   }, { passive: true });
 })();
+
+// ── Auth state ────────────────────────────────────────────────
+const _sb = supabase.createClient(
+  'https://dbkevxvpyhprmzrrceic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2R3gto'
+);
+
+function applyAuthState(session) {
+  const guest = document.getElementById('authGuest');
+  const user  = document.getElementById('authUser');
+  const mLogin = document.getElementById('mobileLogin');
+  const mCab   = document.getElementById('mobileCabinet');
+
+  if (session) {
+    const meta = session.user.user_metadata;
+    const name = meta?.username || session.user.email?.split('@')[0] || 'Пользователь';
+    const initial = name[0].toUpperCase();
+    document.getElementById('userAvatar').textContent = initial;
+    document.getElementById('userName').textContent   = name;
+    document.getElementById('ddName').textContent     = name;
+    document.getElementById('ddEmail').textContent    = session.user.email;
+    guest.style.display = 'none';
+    user.style.display  = 'block';
+    if (mLogin)   mLogin.style.display   = 'none';
+    if (mCab)     mCab.style.display     = 'inline-flex';
+  } else {
+    guest.style.display = 'flex';
+    user.style.display  = 'none';
+    if (mLogin) mLogin.style.display = 'inline-flex';
+    if (mCab)   mCab.style.display   = 'none';
+  }
+}
+
+_sb.auth.getSession().then(({ data }) => applyAuthState(data.session));
+_sb.auth.onAuthStateChange((_e, session) => applyAuthState(session));
+
+function toggleUserMenu() {
+  document.getElementById('authUser').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const menu = document.getElementById('authUser');
+  if (menu && !menu.contains(e.target)) menu.classList.remove('open');
+});
+
+async function signOut() {
+  await _sb.auth.signOut();
+  window.location.reload();
+}
 </script>
 </body>
 </html>

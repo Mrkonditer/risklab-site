@@ -219,7 +219,7 @@ function render() {
       <div class="survey-card">
         <div class="survey-head">
           <h2>${sv.title}</h2>
-          <div class="survey-badge">ОПРОС ${surveyNum} из 2</div>
+          <div class="survey-badge">${INITIAL_SURVEYS_COMPLETED >= 2 ? 'ОПРОС' : `ОПРОС ${surveyNum} из 2`}</div>
         </div>
         <div class="survey-body">
           <div class="survey-name">

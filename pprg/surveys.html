@@ -387,11 +387,16 @@ async function submitSurvey() {
     return;
   }
 
-  if (state.surveyIdx === 0) {
+  // Returning users (already past the 2-survey requirement): finish after each survey
+  if (INITIAL_SURVEYS_COMPLETED >= 2) {
+    state.step = 'alldone';
+  } else if (state.surveyIdx === 0) {
     state.step = 'survey1done';
   } else {
     state.step = 'alldone';
-    // Refresh profile
+  }
+
+  if (state.step === 'alldone') {
     const { data: prof } = await sb.from('profiles').select('*').eq('id', USER.id).single();
     PROFILE = prof;
   }

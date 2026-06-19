@@ -150,6 +150,18 @@ async function init() {
   PROFILE = prof || { surveys_completed: 0 };
   INITIAL_SURVEYS_COMPLETED = PROFILE.surveys_completed;
 
+  // Adjust progress bar labels for returning users
+  if (INITIAL_SURVEYS_COMPLETED >= 2) {
+    document.getElementById('prog2L').textContent = 'Опрос';
+    document.getElementById('prog3L').textContent = 'Готово';
+    document.getElementById('prog4L').textContent = 'Готово';
+    // Hide step 3 and 4 arrows/steps for returning users
+    document.getElementById('prog3').closest('.prog-step').style.display = 'none';
+    document.getElementById('prog3').closest('.prog-step').previousElementSibling.style.display = 'none';
+    document.getElementById('prog4').closest('.prog-step').style.display = 'none';
+    document.getElementById('prog4').closest('.prog-step').previousElementSibling.style.display = 'none';
+  }
+
   const name = USER.user_metadata?.username || USER.email?.split('@')[0] || 'Пользователь';
   document.getElementById('userLabel').textContent = name;
 

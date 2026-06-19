@@ -262,22 +262,45 @@ async function selectIndustry() {
   const id = parseInt(document.getElementById('indSelect').value);
   state.industryId = id;
 
-  // Load 2 system surveys for this industry that user hasn't answered
-  const { data: svs } = await sb.from('surveys')
-    .select('id, title, questions(id, order_num, text)')
-    .eq('industry_id', id)
-    .eq('is_system', true)
-    .eq('is_active', true)
-    .order('created_at', { ascending: true })
-    .limit(2);
+  // Already-answered survey ids (to skip them)
+  const { data: answered } = await sb.from('responses')
+    .select('survey_id')
+    .eq('user_id', USER.id);
+  const answeredIds = (answered || []).map(r => r.survey_id);
 
-  if (!svs || svs.length < 2) {
-    alert('Нет опросов для этой отрасли. Выберите другую.');
+  // 1. Real user surveys for this industry (not system, not own, not already answered)
+  const { data: realSvs } = await sb.from('surveys')
+    .select('id, title, user_id, questions(id, order_num, text)')
+    .eq('industry_id', id)
+    .eq('is_system', false)
+    .eq('is_active', true)
+    .neq('user_id', USER.id)
+    .order('created_at', { ascending: false });
+
+  const pool = (realSvs || []).filter(s => !answeredIds.includes(s.id));
+
+  let selected = pool.slice(0, 2);
+
+  // 2. If fewer than 2 real surveys — fill up with system surveys
+  if (selected.length < 2) {
+    const need = 2 - selected.length;
+    const { data: sysSvs } = await sb.from('surveys')
+      .select('id, title, questions(id, order_num, text)')
+      .eq('industry_id', id)
+      .eq('is_system', true)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    const sysPool = (sysSvs || []).filter(s => !answeredIds.includes(s.id));
+    selected = selected.concat(sysPool.slice(0, need));
+  }
+
+  if (selected.length < 2) {
+    alert('Недостаточно опросов для этой отрасли. Выберите другую или попробуйте позже.');
     return;
   }
 
-  // Sort questions
-  state.surveysForIndustry = svs.map(sv => ({
+  state.surveysForIndustry = selected.map(sv => ({
     ...sv,
     questions: (sv.questions || []).sort((a, b) => a.order_num - b.order_num)
   }));

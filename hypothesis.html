@@ -4,26 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Проверка Гипотезы — RiskLab</title>
-  <meta name="description" content="Платформа для проверки рыночных гипотез — узнайте, нужен ли ваш продукт рынку">
+  <meta name="description" content="Электронная платформа проверки рыночных гипотез — узнайте, нужен ли ваш продукт рынку">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap&subset=cyrillic,latin" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap&subset=cyrillic,latin" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --ink:       #6B1A5E;
-      --slate-100: #F1F3F6; --slate-200: #E2E6EC; --slate-400: #8D99A8;
-      --border-default: #E2E6EC;
-      --cycle-orange: #F4B183;
-      --radius-sm: 8px; --radius-md: 14px; --radius-lg: 20px;
+      --ink: #6B1A5E;
+      --ink-dark: #4A1242;
+      --orange: #F4B183;
+      --green: #00A551;
+      --blue: #0F6FBE;
+      --red: #ED1C24;
+      --slate-100: #F1F3F6;
+      --slate-200: #E2E6EC;
+      --slate-400: #8D99A8;
+      --slate-600: #4E5A68;
+      --border: #E2E6EC;
+      --r-sm: 8px; --r-md: 14px; --r-lg: 20px; --r-xl: 28px;
     }
-    body { font-family: 'IBM Plex Sans', Verdana, sans-serif; color: #16181d; background: #fff; }
-    a { color: inherit; }
+    body { font-family: 'IBM Plex Sans', Verdana, sans-serif; color: #16181d; background: #fff; line-height: 1.6; }
+    a { color: inherit; text-decoration: none; }
 
-    /* Header */
+    /* ── HEADER ── */
     .site-header {
-      position: sticky; top: 0; z-index: 30;
-      background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border-default);
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(255,255,255,0.93); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
     }
     .site-header__inner {
       max-width: 1180px; margin: 0 auto;
@@ -32,185 +39,550 @@
     .site-header__logo img { height: 56px; }
     .site-header__back {
       display: inline-flex; align-items: center; gap: 8px;
-      font-size: 13.5px; font-weight: 500; color: #5b6573;
+      font-size: 13.5px; font-weight: 500; color: var(--slate-600);
       margin-left: auto;
-      background: var(--slate-100); border: 1px solid var(--border-default);
-      border-radius: var(--radius-sm); padding: 0 16px; height: 32px;
-      transition: background 120ms; text-decoration: none;
+      background: var(--slate-100); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 0 16px; height: 34px;
+      transition: background 120ms;
     }
     .site-header__back:hover { background: var(--slate-200); }
 
-    /* Hero */
-    .hyp-hero {
-      background: var(--ink); color: #fff;
+    /* ── HERO ── */
+    .hero {
+      background: var(--ink);
       padding: 80px 28px 72px;
       text-align: center;
+      position: relative; overflow: hidden;
     }
-    .hyp-hero__badge {
+    .hero::before {
+      content: 'ППРГ';
+      position: absolute; right: -40px; top: -20px;
+      font-size: 200px; font-weight: 900; color: rgba(255,255,255,0.04);
+      pointer-events: none; letter-spacing: -8px;
+    }
+    .hero__badge {
       display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 100px; padding: 6px 16px;
-      font-size: 12.5px; font-weight: 500; letter-spacing: 0.06em;
-      text-transform: uppercase; color: var(--cycle-orange);
+      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 100px; padding: 6px 18px;
+      font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--orange);
       margin-bottom: 28px;
     }
-    .hyp-hero h1 {
-      font-size: clamp(28px, 5vw, 52px); font-weight: 700;
-      letter-spacing: -0.02em; line-height: 1.15;
-      max-width: 780px; margin: 0 auto 20px;
+    .hero h1 {
+      font-size: clamp(28px, 5vw, 54px); font-weight: 700;
+      letter-spacing: -0.02em; line-height: 1.12;
+      color: #fff; max-width: 820px; margin: 0 auto 20px;
     }
-    .hyp-hero h1 span { color: var(--cycle-orange); }
-    .hyp-hero p {
-      font-size: 18px; color: rgba(255,255,255,0.72);
-      max-width: 560px; margin: 0 auto 40px; line-height: 1.6;
+    .hero h1 span { color: var(--orange); }
+    .hero__sub {
+      font-size: 18px; color: rgba(255,255,255,0.7);
+      max-width: 580px; margin: 0 auto 48px; line-height: 1.65;
     }
-    .hyp-hero__cta {
-      display: inline-flex; align-items: center; gap: 10px;
-      background: var(--cycle-orange); color: var(--ink);
-      font-weight: 600; font-size: 16px;
-      padding: 14px 32px; border-radius: var(--radius-sm);
-      text-decoration: none; transition: opacity 150ms;
-    }
-    .hyp-hero__cta:hover { opacity: 0.88; }
+    .hero__btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; border-radius: var(--r-sm); padding: 13px 28px; cursor: pointer; transition: opacity 150ms; border: none; font-family: inherit; }
+    .btn:hover { opacity: 0.85; }
+    .btn--primary { background: var(--orange); color: var(--ink); }
+    .btn--ghost { background: rgba(255,255,255,0.1); color: #fff; border: 1.5px solid rgba(255,255,255,0.25); }
 
-    /* Coming Soon section */
-    .coming-soon {
-      padding: 100px 28px;
-      text-align: center;
+    /* ── SECTION WRAPPER ── */
+    .section { padding: 80px 28px; }
+    .section--grey { background: var(--slate-100); }
+    .section--dark { background: var(--ink); color: #fff; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--ink); margin-bottom: 12px;
     }
-    .coming-soon__inner { max-width: 640px; margin: 0 auto; }
-    .coming-soon__icon {
-      width: 80px; height: 80px; border-radius: var(--radius-lg);
+    .section--dark .section-label { color: var(--orange); }
+    .section-title {
+      font-size: clamp(24px, 3.5vw, 38px); font-weight: 700;
+      letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--slate-600); max-width: 600px; margin-bottom: 56px; line-height: 1.65;
+    }
+    .section--dark .section-sub { color: rgba(255,255,255,0.65); }
+
+    /* ── HOW IT WORKS ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+    }
+    .step {
+      padding: 32px 28px;
+      border-right: 1.5px solid var(--border);
+      position: relative;
+    }
+    .step:last-child { border-right: none; }
+    .step__num {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--ink); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; margin-bottom: 20px;
+    }
+    .step__arrow {
+      position: absolute; right: -14px; top: 50%; transform: translateY(-50%);
+      width: 26px; height: 26px; background: #fff; border: 1.5px solid var(--border);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      z-index: 2; color: var(--ink);
+    }
+    .step:last-child .step__arrow { display: none; }
+    .step h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+    .step p { font-size: 14px; color: var(--slate-600); line-height: 1.55; }
+    .step__tag {
+      display: inline-block; margin-top: 14px;
+      background: var(--slate-100); border-radius: 6px;
+      padding: 3px 10px; font-size: 11.5px; font-weight: 600;
+      color: var(--ink); font-family: 'IBM Plex Mono', monospace;
+    }
+
+    /* ── ВЗАИМНОСТЬ ── */
+    .mutual-grid {
+      display: grid; grid-template-columns: 1fr 60px 1fr; gap: 0; align-items: center;
+    }
+    .mutual-card {
+      border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: var(--r-lg); padding: 32px;
+      background: rgba(255,255,255,0.06);
+    }
+    .mutual-card__icon {
+      width: 52px; height: 52px; border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+    }
+    .mutual-card h3 { font-size: 19px; font-weight: 600; margin-bottom: 10px; }
+    .mutual-card p { font-size: 14.5px; color: rgba(255,255,255,0.65); line-height: 1.6; }
+    .mutual-arrow {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--orange); font-size: 24px;
+    }
+    .mutual-arrow span { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.4); text-align: center; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* ── SECTORS ── */
+    .sectors-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
+    }
+    .sector-card {
+      border: 1.5px solid var(--border); border-radius: var(--r-md);
+      padding: 22px 18px; transition: border-color 200ms, box-shadow 200ms;
+      cursor: default;
+    }
+    .sector-card:hover { border-color: var(--ink); box-shadow: 0 4px 20px rgba(107,26,94,0.1); }
+    .sector-card__icon {
+      width: 44px; height: 44px; border-radius: var(--r-sm);
       background: var(--slate-100);
       display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 32px;
+      margin-bottom: 14px; font-size: 22px;
     }
-    .coming-soon h2 {
-      font-size: 30px; font-weight: 700; letter-spacing: -0.02em;
-      margin-bottom: 16px; color: var(--ink);
+    .sector-card h4 { font-size: 13.5px; font-weight: 600; margin-bottom: 6px; line-height: 1.35; }
+    .sector-card p { font-size: 12px; color: var(--slate-400); line-height: 1.5; }
+    .sector-card__surveys {
+      margin-top: 12px; font-size: 11px; font-weight: 600;
+      color: var(--ink); font-family: 'IBM Plex Mono', monospace;
+      background: rgba(107,26,94,0.07); border-radius: 4px;
+      padding: 2px 8px; display: inline-block;
     }
-    .coming-soon p {
-      font-size: 16px; color: #5b6573; line-height: 1.65; margin-bottom: 40px;
+
+    /* ── ОПРОС PREVIEW ── */
+    .survey-preview {
+      border: 1.5px solid var(--border); border-radius: var(--r-xl);
+      overflow: hidden; max-width: 700px; margin: 0 auto;
     }
-    .notify-form {
-      display: flex; gap: 12px; max-width: 440px; margin: 0 auto;
+    .survey-preview__head {
+      background: var(--ink); padding: 20px 28px;
+      display: flex; align-items: center; gap: 14px;
     }
-    .notify-form input {
-      flex: 1; padding: 12px 16px; border: 1.5px solid var(--border-default);
-      border-radius: var(--radius-sm); font-size: 15px; font-family: inherit;
-      outline: none; transition: border-color 150ms;
+    .survey-preview__head h3 { color: #fff; font-size: 16px; font-weight: 600; }
+    .survey-preview__head span {
+      font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+      background: rgba(255,255,255,0.15); border-radius: 4px;
+      padding: 2px 10px; color: var(--orange); margin-left: auto; white-space: nowrap;
     }
-    .notify-form input:focus { border-color: var(--ink); }
-    .notify-form button {
-      padding: 12px 24px; background: var(--ink); color: #fff;
-      border: none; border-radius: var(--radius-sm); font-size: 15px;
+    .survey-preview__body { padding: 28px; }
+    .survey-preview__name {
+      background: var(--slate-100); border-radius: var(--r-sm);
+      padding: 14px 18px; margin-bottom: 20px;
+      font-weight: 600; font-size: 15px; color: var(--ink);
+      border: 1.5px dashed var(--slate-200);
+    }
+    .survey-preview__name span { font-size: 11px; font-weight: 500; color: var(--slate-400); display: block; margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace; }
+    .question {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 0; border-bottom: 1px solid var(--border);
+    }
+    .question:last-child { border-bottom: none; }
+    .question__num { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--slate-400); min-width: 20px; }
+    .question__text { flex: 1; font-size: 14px; }
+    .question__btns { display: flex; gap: 6px; }
+    .q-btn {
+      padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      cursor: pointer; border: 1.5px solid; transition: all 120ms;
+    }
+    .q-btn--yes { border-color: var(--green); color: var(--green); background: rgba(0,165,81,0.06); }
+    .q-btn--yes:hover { background: var(--green); color: #fff; }
+    .q-btn--no { border-color: var(--red); color: var(--red); background: rgba(237,28,36,0.06); }
+    .q-btn--no:hover { background: var(--red); color: #fff; }
+
+    /* ── РЕЗУЛЬТАТЫ PREVIEW ── */
+    .result-preview {
+      border: 1.5px solid var(--border); border-radius: var(--r-xl);
+      overflow: hidden; max-width: 700px; margin: 0 auto;
+    }
+    .result-preview__head {
+      background: var(--ink-dark); padding: 20px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .result-preview__head h3 { color: #fff; font-size: 15px; font-weight: 600; }
+    .result-preview__head .timer {
+      font-family: 'IBM Plex Mono', monospace; color: var(--orange);
+      font-size: 13px; background: rgba(255,255,255,0.08); padding: 4px 12px; border-radius: 6px;
+    }
+    .result-preview__body { padding: 24px 28px; }
+    .result-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .result-row:last-child { margin-bottom: 0; }
+    .result-row__label { font-size: 13px; color: var(--slate-600); min-width: 160px; flex: 1; }
+    .result-row__bar { flex: 2; height: 10px; background: var(--slate-200); border-radius: 10px; overflow: hidden; }
+    .result-row__fill { height: 100%; border-radius: 10px; }
+    .result-row__pct { font-size: 13px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; min-width: 44px; text-align: right; }
+
+    /* ── РЕГИСТРАЦИЯ ── */
+    .reg-block {
+      background: var(--slate-100); border-radius: var(--r-xl);
+      padding: 56px; text-align: center; max-width: 640px; margin: 0 auto;
+    }
+    .reg-block h2 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; color: var(--ink); }
+    .reg-block p { font-size: 16px; color: var(--slate-600); margin-bottom: 32px; line-height: 1.6; }
+    .reg-form { display: flex; gap: 12px; }
+    .reg-form input {
+      flex: 1; padding: 13px 18px; border: 1.5px solid var(--border);
+      border-radius: var(--r-sm); font-size: 15px; font-family: inherit;
+      outline: none; transition: border-color 150ms; background: #fff;
+    }
+    .reg-form input:focus { border-color: var(--ink); }
+    .reg-form button {
+      padding: 13px 26px; background: var(--ink); color: #fff;
+      border: none; border-radius: var(--r-sm); font-size: 15px;
       font-weight: 600; font-family: inherit; cursor: pointer;
       transition: opacity 150ms; white-space: nowrap;
     }
-    .notify-form button:hover { opacity: 0.85; }
+    .reg-form button:hover { opacity: 0.85; }
+    .reg-note { font-size: 12px; color: var(--slate-400); margin-top: 14px; }
 
-    /* Steps preview */
-    .steps { padding: 0 28px 100px; }
-    .steps__inner { max-width: 1000px; margin: 0 auto; }
-    .steps h2 {
-      font-size: 28px; font-weight: 700; letter-spacing: -0.02em;
-      margin-bottom: 48px; text-align: center; color: var(--ink);
-    }
-    .steps__grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 24px;
-    }
-    .step-card {
-      border: 1.5px solid var(--border-default); border-radius: var(--radius-md);
-      padding: 28px 24px;
-    }
-    .step-card__num {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--ink); color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 700; margin-bottom: 16px;
-    }
-    .step-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-    .step-card p { font-size: 14px; color: #5b6573; line-height: 1.55; }
-
-    /* Footer */
+    /* ── FOOTER ── */
     .site-footer {
-      background: var(--ink); color: rgba(255,255,255,0.6);
-      padding: 32px 28px; text-align: center;
-      font-size: 13.5px;
+      background: var(--ink); color: rgba(255,255,255,0.55);
+      padding: 32px 28px; text-align: center; font-size: 13.5px;
     }
 
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .steps-grid { grid-template-columns: 1fr 1fr; }
+      .step { border-right: none; border-bottom: 1.5px solid var(--border); }
+      .step:nth-child(2), .step:nth-child(4) { border-bottom: none; }
+      .step__arrow { display: none; }
+      .sectors-grid { grid-template-columns: repeat(3, 1fr); }
+      .mutual-grid { grid-template-columns: 1fr; }
+      .mutual-arrow { transform: rotate(90deg); }
+    }
     @media (max-width: 600px) {
-      .notify-form { flex-direction: column; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .step { border-right: none; border-bottom: 1.5px solid var(--border); }
+      .step:last-child { border-bottom: none; }
+      .sectors-grid { grid-template-columns: repeat(2, 1fr); }
+      .reg-form { flex-direction: column; }
+      .survey-preview__body { padding: 18px; }
+      .question { flex-wrap: wrap; }
+      .reg-block { padding: 32px 22px; }
     }
   </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header class="site-header">
   <div class="site-header__inner">
     <a href="index.html" class="site-header__logo">
       <img src="assets/logo-trademark.png" alt="RiskLab">
     </a>
     <a href="index.html" class="site-header__back">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
       На главную
     </a>
   </div>
 </header>
 
-<section class="hyp-hero">
-  <div class="hyp-hero__badge">Новый продукт · RiskLab</div>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero__badge">Новый продукт · ППРГ</div>
   <h1>Нужен ли твой продукт <span>рынку?</span></h1>
-  <p>Платформа для быстрой проверки рыночных гипотез. Публикуй идею — получай реальную обратную связь от потенциальных клиентов.</p>
-  <a href="#notify" class="hyp-hero__cta">
-    Узнать первым
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-  </a>
+  <p class="hero__sub">Электронная платформа проверки рыночных гипотез — создай опрос для своей отрасли и получи реальные данные от участников рынка.</p>
+  <div class="hero__btns">
+    <a href="#register" class="btn btn--primary">
+      Зарегистрироваться
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
+    <a href="#how" class="btn btn--ghost">Как это работает</a>
+  </div>
 </section>
 
-<section class="steps">
-  <div class="steps__inner">
-    <h2>Как это работает</h2>
-    <div class="steps__grid">
-      <div class="step-card">
-        <div class="step-card__num">1</div>
-        <h3>Описываешь идею</h3>
-        <p>Формулируешь продукт и целевую аудиторию в простой анкете — за 10 минут.</p>
+<!-- КАК ЭТО РАБОТАЕТ -->
+<section class="section" id="how">
+  <div class="container">
+    <div class="section-label">Процессная модель</div>
+    <h2 class="section-title">Как работает платформа</h2>
+    <p class="section-sub">Четыре шага от регистрации до получения результатов по вашей гипотезе.</p>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step__num">1</div>
+        <div class="step__arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <h3>Регистрация</h3>
+        <p>Вводите логин и пароль. Выбираете цель: создать опрос или мониторить результаты.</p>
+        <span class="step__tag">ЗАРЕГИСТРИРОВАТЬСЯ</span>
       </div>
-      <div class="step-card">
-        <div class="step-card__num">2</div>
-        <h3>Платформа тестирует</h3>
-        <p>Гипотеза показывается реальным людям из целевой аудитории.</p>
+      <div class="step">
+        <div class="step__num">2</div>
+        <div class="step__arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <h3>Пройдите 2 чужих опроса</h3>
+        <p>Выбираете отрасль, в которой у вас есть опыт. Отвечаете ДА/НЕТ на 5 вопросов двух других участников.</p>
+        <span class="step__tag">ВХОД ДЛЯ СОЗДАНИЯ ОПРОСА</span>
       </div>
-      <div class="step-card">
-        <div class="step-card__num">3</div>
-        <h3>Получаешь данные</h3>
-        <p>Отчёт с метриками интереса, готовности платить и ключевыми возражениями.</p>
+      <div class="step">
+        <div class="step__num">3</div>
+        <div class="step__arrow"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        <h3>Создайте свой опрос</h3>
+        <p>Выбираете отрасль, вводите название гипотезы и формулируете 5 вопросов. Запускаете тестирование.</p>
+        <span class="step__tag">СОЗДАТЬ СВОЙ ОПРОС</span>
       </div>
-      <div class="step-card">
-        <div class="step-card__num">4</div>
-        <h3>Принимаешь решение</h3>
-        <p>Запускаешь продукт с уверенностью или корректируешь идею до вложений.</p>
+      <div class="step">
+        <div class="step__num">4</div>
+        <h3>Мониторинг результатов</h3>
+        <p>В личном кабинете видите % ответов ДА/НЕТ по каждому вопросу в режиме реального времени.</p>
+        <span class="step__tag">ЛИЧНЫЙ КАБИНЕТ</span>
       </div>
     </div>
   </div>
 </section>
 
-<section class="coming-soon" id="notify">
-  <div class="coming-soon__inner">
-    <div class="coming-soon__icon">
-      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#6B1A5E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/>
-        <path d="M12 6v6l4 2"/>
-      </svg>
+<!-- ВЗАИМНОСТЬ -->
+<section class="section section--dark">
+  <div class="container">
+    <div class="section-label">Принцип платформы</div>
+    <h2 class="section-title">Взаимная экспертиза</h2>
+    <p class="section-sub">Чтобы проверить свою гипотезу — сначала помоги другим. Это гарантирует качество аудитории.</p>
+    <div class="mutual-grid">
+      <div class="mutual-card">
+        <div class="mutual-card__icon" style="background:rgba(244,177,131,0.15);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#F4B183" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Вы — эксперт для других</h3>
+        <p>Отвечаете на 2 опроса участников в той отрасли, где у вас есть реальный опыт и знания. Ваши ответы — ценные данные для других предпринимателей.</p>
+      </div>
+      <div class="mutual-arrow">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3l4 4-4 4"/><path d="M16 21l-4-4 4-4"/></svg>
+        <span>взаимный обмен</span>
+      </div>
+      <div class="mutual-card">
+        <div class="mutual-card__icon" style="background:rgba(0,165,81,0.15);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00A551" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <h3>Другие эксперты — для вас</h3>
+        <p>После этого открывается доступ к созданию собственного опроса. Ваши вопросы увидят профессионалы из вашей отрасли и дадут честную обратную связь.</p>
+      </div>
     </div>
-    <h2>Платформа в разработке</h2>
-    <p>Оставьте e-mail — сообщим о запуске первыми и дадим приоритетный доступ.</p>
-    <form class="notify-form" onsubmit="handleNotify(event)">
-      <input type="email" placeholder="ваш@email.ru" required>
-      <button type="submit">Уведомить меня</button>
-    </form>
+  </div>
+</section>
+
+<!-- ШАБЛОН ОПРОСА -->
+<section class="section section--grey">
+  <div class="container">
+    <div class="section-label">Шаблон</div>
+    <h2 class="section-title">Как выглядит опрос</h2>
+    <p class="section-sub">Название гипотезы и 5 вопросов с ответами ДА или НЕТ — просто и чётко.</p>
+    <div class="survey-preview">
+      <div class="survey-preview__head">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F4B183" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <h3>Шаблон опроса</h3>
+        <span>Растениеводство</span>
+      </div>
+      <div class="survey-preview__body">
+        <div class="survey-preview__name">
+          <span>НАИМЕНОВАНИЕ ЗАПРОСА</span>
+          Ваше отношение к технологиям выращивания томатов
+        </div>
+        <div class="question">
+          <span class="question__num">01</span>
+          <span class="question__text">Используете ли вы автоматические системы полива при выращивании томатов?</span>
+          <div class="question__btns">
+            <button class="q-btn q-btn--yes">ДА</button>
+            <button class="q-btn q-btn--no">НЕТ</button>
+          </div>
+        </div>
+        <div class="question">
+          <span class="question__num">02</span>
+          <span class="question__text">Предпочитаете ли вы выращивать томаты исключительно в закрытом грунте?</span>
+          <div class="question__btns">
+            <button class="q-btn q-btn--yes">ДА</button>
+            <button class="q-btn q-btn--no">НЕТ</button>
+          </div>
+        </div>
+        <div class="question">
+          <span class="question__num">03</span>
+          <span class="question__text">Применяете ли вы гидропонику вместо традиционного выращивания в почвогрунте?</span>
+          <div class="question__btns">
+            <button class="q-btn q-btn--yes">ДА</button>
+            <button class="q-btn q-btn--no">НЕТ</button>
+          </div>
+        </div>
+        <div class="question">
+          <span class="question__num">04</span>
+          <span class="question__text">Используете ли вы специализированные LED-фитолампы для досвечивания растений?</span>
+          <div class="question__btns">
+            <button class="q-btn q-btn--yes">ДА</button>
+            <button class="q-btn q-btn--no">НЕТ</button>
+          </div>
+        </div>
+        <div class="question">
+          <span class="question__num">05</span>
+          <span class="question__text">Является ли для вас приоритетным использование исключительно органических методов?</span>
+          <div class="question__btns">
+            <button class="q-btn q-btn--yes">ДА</button>
+            <button class="q-btn q-btn--no">НЕТ</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- РЕЗУЛЬТАТЫ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Личный кабинет</div>
+    <h2 class="section-title">Результаты в реальном времени</h2>
+    <p class="section-sub">После запуска опроса вы видите процент ответов ДА/НЕТ по каждому вопросу — это и есть проверка вашей гипотезы.</p>
+    <div class="result-preview">
+      <div class="result-preview__head">
+        <h3>Реестр опросов · Растениеводство</h3>
+        <span class="timer">⏱ 02:14:33</span>
+      </div>
+      <div class="result-preview__body">
+        <div class="result-row">
+          <span class="result-row__label">Автоматические системы полива</span>
+          <div class="result-row__bar"><div class="result-row__fill" style="width:72%;background:var(--green)"></div></div>
+          <span class="result-row__pct" style="color:var(--green)">72%</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row__label">Выращивание в закрытом грунте</span>
+          <div class="result-row__bar"><div class="result-row__fill" style="width:55%;background:var(--green)"></div></div>
+          <span class="result-row__pct" style="color:var(--green)">55%</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row__label">Гидропоника</span>
+          <div class="result-row__bar"><div class="result-row__fill" style="width:28%;background:var(--red)"></div></div>
+          <span class="result-row__pct" style="color:var(--red)">28%</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row__label">LED-фитолампы</span>
+          <div class="result-row__bar"><div class="result-row__fill" style="width:63%;background:var(--green)"></div></div>
+          <span class="result-row__pct" style="color:var(--green)">63%</span>
+        </div>
+        <div class="result-row">
+          <span class="result-row__label">Органические методы</span>
+          <div class="result-row__bar"><div class="result-row__fill" style="width:41%;background:var(--red)"></div></div>
+          <span class="result-row__pct" style="color:var(--red)">41%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ОТРАСЛИ -->
+<section class="section section--grey">
+  <div class="container">
+    <div class="section-label">Охват</div>
+    <h2 class="section-title">10 отраслей экономики</h2>
+    <p class="section-sub">Выберите свою сферу — платформа подберёт релевантную аудиторию для проверки гипотезы.</p>
+    <div class="sectors-grid">
+      <div class="sector-card">
+        <div class="sector-card__icon">🌾</div>
+        <h4>Растениеводство</h4>
+        <p>Технологии выращивания, агрохимия, автоматизация</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🐄</div>
+        <h4>Животноводство</h4>
+        <p>Кормовые добавки, птицефабрики, КРС</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🌲</div>
+        <h4>Лесозаготовка</h4>
+        <p>Спецтехника, виды древесины, лесосеки</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🐟</div>
+        <h4>Рыболовство</h4>
+        <p>Аквакультура, орудия лова, виды рыбы</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">⛏️</div>
+        <h4>Добыча ископаемых</h4>
+        <p>Нерудные материалы, оборудование, способы добычи</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🥩</div>
+        <h4>Пищевая промышленность</h4>
+        <p>Упаковка, субпродукты, потребительские предпочтения</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🧵</div>
+        <h4>Текстиль и одежда</h4>
+        <p>Состав материалов, сырьё, потребительский спрос</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🪵</div>
+        <h4>Деревообработка</h4>
+        <p>Мебельное производство, пиломатериалы, строительство</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🛢️</div>
+        <h4>ГСМ и нефтепродукты</h4>
+        <p>Моторные масла, технологии НПЗ, упаковка</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+      <div class="sector-card">
+        <div class="sector-card__icon">🧪</div>
+        <h4>Химическая промышленность</h4>
+        <p>Полимеры, катализаторы, упаковочные плёнки</p>
+        <span class="sector-card__surveys">2 опроса · 10 вопросов</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- РЕГИСТРАЦИЯ -->
+<section class="section" id="register">
+  <div class="container">
+    <div class="reg-block">
+      <h2>Платформа в разработке</h2>
+      <p>Оставьте e-mail — уведомим о запуске и дадим приоритетный доступ к тестированию.</p>
+      <form class="reg-form" onsubmit="handleSubmit(event)">
+        <input type="email" placeholder="ваш@email.ru" required>
+        <button type="submit">Уведомить меня</button>
+      </form>
+      <p class="reg-note">Без спама. Только одно письмо — когда платформа откроется.</p>
+    </div>
   </div>
 </section>
 
@@ -219,15 +591,15 @@
 </footer>
 
 <script>
-function handleNotify(e) {
+function handleSubmit(e) {
   e.preventDefault();
   const btn = e.target.querySelector('button');
+  const input = e.target.querySelector('input');
   btn.textContent = 'Готово ✓';
   btn.style.background = '#00A551';
-  e.target.querySelector('input').disabled = true;
+  input.disabled = true;
   btn.disabled = true;
 }
 </script>
-
 </body>
 </html>

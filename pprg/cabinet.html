@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Личный кабинет — ППРГ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap&subset=cyrillic,latin" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #6B1A5E; --ink-dark: #4A1242;
+      --orange: #F4B183; --green: #00A551; --red: #ED1C24;
+      --slate-100: #F1F3F6; --slate-200: #E2E6EC;
+      --slate-400: #8D99A8; --slate-600: #4E5A68;
+      --border: #E2E6EC;
+    }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--slate-100); color: #16181d; min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 0 28px; height: 64px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 50; }
+    .topbar img { height: 48px; }
+    .topbar__sep { width: 1px; height: 28px; background: var(--border); }
+    .topbar__title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+    .topbar__user { margin-left: auto; font-size: 13px; color: var(--slate-600); display: flex; align-items: center; gap: 10px; }
+    .topbar__logout { font-size: 12.5px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; background: none; font-family: inherit; color: var(--slate-600); }
+    .topbar__logout:hover { background: var(--slate-100); }
+
+    .main { max-width: 900px; margin: 0 auto; padding: 36px 20px 60px; }
+
+    /* HEADER STATS */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+    .stat-card { background: #fff; border-radius: 14px; border: 1.5px solid var(--border); padding: 20px 22px; }
+    .stat-card__label { font-size: 11.5px; font-weight: 600; color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+    .stat-card__value { font-size: 26px; font-weight: 700; color: var(--ink); font-family: 'IBM Plex Mono', monospace; }
+    .stat-card__sub { font-size: 12px; color: var(--slate-400); margin-top: 4px; }
+
+    /* TABS */
+    .section-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid var(--border); }
+    .stab { padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--slate-600); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 140ms; }
+    .stab.active { color: var(--ink); border-bottom-color: var(--ink); }
+
+    /* SURVEY CARDS */
+    .surveys-list { display: flex; flex-direction: column; gap: 16px; }
+    .sv-card { background: #fff; border-radius: 16px; border: 1.5px solid var(--border); overflow: hidden; }
+    .sv-card__head { padding: 18px 24px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
+    .sv-card__head:hover { background: rgba(107,26,94,0.02); }
+    .sv-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--slate-400); background: var(--slate-100); padding: 3px 10px; border-radius: 6px; flex-shrink: 0; }
+    .sv-card__info { flex: 1; }
+    .sv-card__title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .sv-card__meta { font-size: 12.5px; color: var(--slate-600); display: flex; gap: 14px; }
+    .sv-card__meta span { display: flex; align-items: center; gap: 4px; }
+    .sv-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; font-family: 'IBM Plex Mono', monospace; flex-shrink: 0; }
+    .sv-badge.active { background: rgba(0,165,81,0.1); color: var(--green); }
+    .sv-badge.closed { background: var(--slate-100); color: var(--slate-400); }
+    .sv-chevron { color: var(--slate-400); transition: transform 200ms; flex-shrink: 0; }
+    .sv-card.open .sv-chevron { transform: rotate(180deg); }
+
+    /* RESULTS PANEL */
+    .sv-results { display: none; border-top: 1px solid var(--border); }
+    .sv-card.open .sv-results { display: block; }
+    .sv-results__inner { padding: 24px; }
+    .result-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .result-row:last-child { margin-bottom: 0; }
+    .result-label { font-size: 13px; color: var(--slate-600); min-width: 0; flex: 1; line-height: 1.4; }
+    .result-bars { flex: 1.2; display: flex; flex-direction: column; gap: 4px; }
+    .bar-row { display: flex; align-items: center; gap: 8px; }
+    .bar-bg { flex: 1; height: 8px; background: var(--slate-200); border-radius: 8px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 8px; transition: width 500ms ease; }
+    .bar-pct { font-size: 12px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; min-width: 34px; text-align: right; }
+    .bar-tag { font-size: 10px; font-weight: 700; min-width: 28px; color: var(--slate-400); }
+    .sv-results__footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .timer-badge { font-family: 'IBM Plex Mono', monospace; font-size: 13px; background: rgba(107,26,94,0.08); color: var(--ink); padding: 6px 14px; border-radius: 8px; }
+    .close-btn { padding: 10px 22px; background: var(--red); color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .close-btn:hover { opacity: 0.87; }
+
+    /* EMPTY / LOADING */
+    .empty { background: #fff; border-radius: 16px; border: 1.5px solid var(--border); padding: 48px; text-align: center; }
+    .empty h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--slate-600); }
+    .empty p { font-size: 14px; color: var(--slate-400); margin-bottom: 22px; line-height: 1.6; }
+    .create-btn { padding: 12px 24px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .create-btn:hover { opacity: 0.87; }
+
+    #loading { text-align: center; padding: 60px; color: var(--slate-400); }
+    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr 1fr; } .result-label { font-size: 12px; } }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../index.html"><img src="../assets/logo-trademark.png" alt="RiskLab"></a>
+  <div class="topbar__sep"></div>
+  <span class="topbar__title">Личный кабинет</span>
+  <div class="topbar__user">
+    <span id="userLabel"></span>
+    <button class="topbar__logout" onclick="logout()">Выйти</button>
+  </div>
+</div>
+
+<div class="main">
+  <div id="appRoot"><div id="loading">Загрузка...</div></div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://dbkevxvpyhprmzrrceic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2Z3gto'
+);
+
+let USER = null, PROFILE = null, MY_SURVEYS = [], RESULTS_CACHE = {};
+let activeTab = 'my';
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return window.location.href = 'auth.html';
+  USER = session.user;
+
+  const { data: prof } = await sb.from('profiles').select('*').eq('id', USER.id).single();
+  PROFILE = prof || { surveys_completed: 0 };
+
+  const name = USER.user_metadata?.username || USER.email?.split('@')[0] || 'Пользователь';
+  document.getElementById('userLabel').textContent = name;
+
+  // Load user's surveys
+  const { data: surveys } = await sb.from('surveys')
+    .select('*, industries(name, icon), questions(id, order_num, text)')
+    .eq('user_id', USER.id)
+    .eq('is_system', false)
+    .order('created_at', { ascending: false });
+
+  MY_SURVEYS = (surveys || []).map(sv => ({
+    ...sv,
+    questions: (sv.questions || []).sort((a, b) => a.order_num - b.order_num)
+  }));
+
+  render();
+  // Auto-start timer updates
+  setInterval(updateTimers, 1000);
+}
+
+function render() {
+  const root = document.getElementById('appRoot');
+  const activeSurveys = MY_SURVEYS.filter(s => s.is_active).length;
+  const totalResponses = MY_SURVEYS.reduce((a, s) => a + (s.response_count || 0), 0);
+
+  root.innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-card__label">Мои опросы</div>
+        <div class="stat-card__value">${MY_SURVEYS.length}</div>
+        <div class="stat-card__sub">${activeSurveys} активных</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__label">Всего ответов</div>
+        <div class="stat-card__value">${totalResponses}</div>
+        <div class="stat-card__sub">по всем опросам</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__label">Пройдено чужих</div>
+        <div class="stat-card__value">${PROFILE?.surveys_completed || 0}</div>
+        <div class="stat-card__sub">опросов участников</div>
+      </div>
+    </div>
+
+    <div class="section-tabs">
+      <div class="stab ${activeTab === 'my' ? 'active' : ''}" onclick="switchTab('my')">Мои опросы</div>
+      <div class="stab ${activeTab === 'create' ? 'active' : ''}" onclick="switchTab('create')">Создать новый</div>
+    </div>
+
+    <div id="tabContent">${renderTab()}</div>`;
+}
+
+function renderTab() {
+  if (activeTab === 'create') {
+    return `<div class="empty">
+      <h3>Создать ещё один опрос</h3>
+      <p>Добавьте новую гипотезу для проверки — выберите отрасль и сформулируйте 5 вопросов.</p>
+      <button class="create-btn" onclick="window.location.href='create.html'">Создать опрос</button>
+    </div>`;
+  }
+
+  if (MY_SURVEYS.length === 0) {
+    return `<div class="empty">
+      <h3>Опросов пока нет</h3>
+      <p>Пройдите 2 опроса других участников, затем создайте собственный для проверки вашей рыночной гипотезы.</p>
+      <button class="create-btn" onclick="window.location.href='${(PROFILE?.surveys_completed||0) >= 2 ? 'create' : 'surveys'}.html'">
+        ${(PROFILE?.surveys_completed||0) >= 2 ? 'Создать опрос' : 'Пройти опросы'}
+      </button>
+    </div>`;
+  }
+
+  return `<div class="surveys-list">
+    ${MY_SURVEYS.map((sv, idx) => renderSurveyCard(sv, idx)).join('')}
+  </div>`;
+}
+
+function renderSurveyCard(sv, idx) {
+  const age = timeSince(sv.created_at);
+  const ind = sv.industries;
+  return `
+    <div class="sv-card" id="svc${idx}">
+      <div class="sv-card__head" onclick="toggleCard(${idx}, '${sv.id}')">
+        <span class="sv-num">#${idx+1}</span>
+        <div class="sv-card__info">
+          <div class="sv-card__title">${sv.title}</div>
+          <div class="sv-card__meta">
+            <span>${ind?.icon || '📊'} ${ind?.name || '—'}</span>
+            <span>📅 ${age}</span>
+            <span>💬 ${sv.response_count || 0} ответов</span>
+          </div>
+        </div>
+        <span class="sv-badge ${sv.is_active ? 'active' : 'closed'}">${sv.is_active ? 'АКТИВЕН' : 'ЗАКРЫТ'}</span>
+        <svg class="sv-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="sv-results" id="svr${idx}">
+        <div class="sv-results__inner" id="svri${idx}">
+          <div style="text-align:center;padding:24px;color:var(--slate-400);font-size:14px">Загрузка результатов...</div>
+        </div>
+        ${sv.is_active ? `
+        <div class="sv-results__footer">
+          <span class="timer-badge" id="timer${idx}">⏱ ${getTimer(sv.created_at)}</span>
+          <button class="close-btn" onclick="closeSurvey('${sv.id}', ${idx})">
+            ЗАВЕРШЕНИЕ ПРОЦЕДУРЫ МОНИТОРИНГА
+          </button>
+        </div>` : `
+        <div class="sv-results__footer">
+          <span style="font-size:13px;color:var(--slate-400)">Опрос завершён · ${age}</span>
+        </div>`}
+      </div>
+    </div>`;
+}
+
+async function toggleCard(idx, surveyId) {
+  const card = document.getElementById('svc' + idx);
+  const isOpen = card.classList.contains('open');
+  card.classList.toggle('open', !isOpen);
+
+  if (!isOpen && !RESULTS_CACHE[surveyId]) {
+    await loadResults(surveyId, idx);
+  } else if (!isOpen && RESULTS_CACHE[surveyId]) {
+    renderResults(surveyId, idx);
+  }
+}
+
+async function loadResults(surveyId, idx) {
+  const sv = MY_SURVEYS[idx];
+  const { data: responses } = await sb.from('responses')
+    .select('answers').eq('survey_id', surveyId);
+
+  const resp = responses || [];
+  const results = sv.questions.map(q => {
+    let yes = 0, no = 0;
+    resp.forEach(r => {
+      const ans = r.answers[q.order_num];
+      if (ans === true) yes++;
+      else if (ans === false) no++;
+    });
+    const total = yes + no;
+    return { text: q.text, order_num: q.order_num, yes, no, total,
+             yesPct: total ? Math.round(yes/total*100) : 0,
+             noPct:  total ? Math.round(no/total*100)  : 0 };
+  });
+
+  RESULTS_CACHE[surveyId] = results;
+  renderResults(surveyId, idx);
+}
+
+function renderResults(surveyId, idx) {
+  const results = RESULTS_CACHE[surveyId];
+  const container = document.getElementById('svri' + idx);
+  if (!results || results.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--slate-400);font-size:14px">Ответов пока нет</div>';
+    return;
+  }
+
+  container.innerHTML = results.map(r => `
+    <div class="result-row">
+      <span class="result-label">${r.text}</span>
+      <div class="result-bars">
+        <div class="bar-row">
+          <span class="bar-tag" style="color:var(--green)">ДА</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${r.yesPct}%;background:var(--green)"></div></div>
+          <span class="bar-pct" style="color:var(--green)">${r.yesPct}%</span>
+        </div>
+        <div class="bar-row">
+          <span class="bar-tag" style="color:var(--red)">НЕТ</span>
+          <div class="bar-bg"><div class="bar-fill" style="width:${r.noPct}%;background:var(--red)"></div></div>
+          <span class="bar-pct" style="color:var(--red)">${r.noPct}%</span>
+        </div>
+      </div>
+      <span style="font-size:11px;color:var(--slate-400);font-family:'IBM Plex Mono',monospace;min-width:40px;text-align:right">${r.total} отв.</span>
+    </div>`).join('');
+}
+
+async function closeSurvey(surveyId, idx) {
+  if (!confirm('Завершить мониторинг этого опроса? Он будет закрыт для новых ответов.')) return;
+  const { error } = await sb.from('surveys').update({ is_active: false }).eq('id', surveyId);
+  if (error) { alert('Ошибка: ' + error.message); return; }
+  MY_SURVEYS[idx].is_active = false;
+  render();
+  // Re-open card
+  setTimeout(() => toggleCard(idx, surveyId), 100);
+}
+
+function switchTab(tab) {
+  activeTab = tab;
+  render();
+}
+
+function timeSince(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const h = Math.floor(diff / 3600000);
+  const d = Math.floor(h / 24);
+  if (d > 0) return `${d} дн. назад`;
+  if (h > 0) return `${h} ч. назад`;
+  return 'только что';
+}
+
+function getTimer(dateStr) {
+  const elapsed = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  const h = Math.floor(elapsed / 3600).toString().padStart(2, '0');
+  const m = Math.floor((elapsed % 3600) / 60).toString().padStart(2, '0');
+  const s = (elapsed % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+function updateTimers() {
+  MY_SURVEYS.forEach((sv, idx) => {
+    if (!sv.is_active) return;
+    const el = document.getElementById('timer' + idx);
+    if (el) el.textContent = '⏱ ' + getTimer(sv.created_at);
+  });
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = 'auth.html';
+}
+
+init();
+</script>
+</body>
+</html>

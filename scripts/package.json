@@ -1,0 +1,9 @@
+{
+  "name": "risklab-pprg-setup",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "dependencies": {
+    "pg": "^8.12.0",
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}

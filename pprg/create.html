@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Создать опрос — ППРГ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap&subset=cyrillic,latin" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #6B1A5E; --orange: #F4B183; --green: #00A551; --red: #ED1C24;
+      --slate-100: #F1F3F6; --slate-400: #8D99A8; --slate-600: #4E5A68;
+      --border: #E2E6EC;
+    }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--slate-100); color: #16181d; min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+    .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 0 28px; height: 64px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 50; }
+    .topbar img { height: 48px; }
+    .topbar__sep { width: 1px; height: 28px; background: var(--border); }
+    .topbar__title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+    .topbar__user { margin-left: auto; font-size: 13px; color: var(--slate-600); display: flex; align-items: center; gap: 10px; }
+    .topbar__logout { font-size: 12.5px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; background: none; font-family: inherit; color: var(--slate-600); }
+    .topbar__logout:hover { background: var(--slate-100); }
+
+    .main { max-width: 720px; margin: 0 auto; padding: 36px 20px 60px; }
+
+    .hero-banner { background: var(--ink); border-radius: 16px; padding: 28px 32px; margin-bottom: 28px; display: flex; align-items: center; gap: 20px; }
+    .hero-banner__icon { width: 48px; height: 48px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .hero-banner h2 { font-size: 19px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+    .hero-banner p { font-size: 13.5px; color: rgba(255,255,255,0.65); line-height: 1.55; }
+
+    /* LOCK STATE */
+    .lock-card { background: #fff; border-radius: 18px; border: 1.5px solid var(--border); padding: 48px 36px; text-align: center; }
+    .lock-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--slate-100); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .lock-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+    .lock-card p { font-size: 14.5px; color: var(--slate-600); margin-bottom: 28px; line-height: 1.65; }
+    .lock-btn { padding: 13px 28px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .lock-btn:hover { opacity: 0.87; }
+    .progress-mini { display: flex; gap: 8px; align-items: center; justify-content: center; margin-bottom: 24px; }
+    .pm-step { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .pm-done { background: var(--green); color: #fff; }
+    .pm-todo { background: var(--slate-200); color: var(--slate-400); }
+    .pm-label { font-size: 11.5px; color: var(--slate-400); font-family: 'IBM Plex Mono', monospace; }
+
+    /* CREATE FORM */
+    .form-card { background: #fff; border-radius: 18px; border: 1.5px solid var(--border); overflow: hidden; }
+    .form-head { background: var(--ink); padding: 24px 32px; }
+    .form-head h3 { font-size: 16px; font-weight: 700; color: #fff; }
+    .form-head p { font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 4px; }
+    .form-body { padding: 28px 32px; }
+
+    .form-group { margin-bottom: 22px; }
+    .form-label { font-size: 11.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate-600); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .form-label .tag { font-family: 'IBM Plex Mono', monospace; background: rgba(107,26,94,0.08); color: var(--ink); padding: 2px 8px; border-radius: 4px; font-size: 10.5px; text-transform: none; letter-spacing: 0; }
+    .form-input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; transition: border-color 150ms; resize: vertical; min-height: 44px; }
+    .form-input:focus { border-color: var(--ink); }
+    .form-input::placeholder { color: var(--slate-400); }
+
+    .industry-select { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; cursor: pointer; appearance: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238D99A8' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center; }
+    .industry-select:focus { border-color: var(--ink); }
+
+    .questions-block { border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .q-row { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+    .q-row:last-child { border-bottom: none; }
+    .q-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--slate-400); min-width: 20px; padding-top: 14px; }
+    .q-input { flex: 1; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; resize: none; min-height: 42px; transition: border-color 150ms; }
+    .q-input:focus { border-color: var(--ink); }
+    .q-input::placeholder { color: var(--slate-400); }
+
+    .form-footer { padding: 20px 32px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; }
+    .submit-btn { padding: 14px 32px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 150ms; }
+    .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .submit-btn:not(:disabled):hover { opacity: 0.87; }
+
+    /* SUCCESS */
+    .success-card { background: #fff; border-radius: 18px; border: 1.5px solid var(--border); padding: 56px 36px; text-align: center; }
+    .success-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .success-card p { font-size: 15px; color: var(--slate-600); margin-bottom: 28px; line-height: 1.65; }
+    .success-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .big-btn { padding: 14px 28px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .big-btn:hover { opacity: 0.87; }
+
+    #loading { text-align: center; padding: 60px; color: var(--slate-400); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../index.html"><img src="../assets/logo-trademark.png" alt="RiskLab"></a>
+  <div class="topbar__sep"></div>
+  <span class="topbar__title">Создание опроса</span>
+  <div class="topbar__user">
+    <span id="userLabel"></span>
+    <button class="topbar__logout" onclick="logout()">Выйти</button>
+  </div>
+</div>
+
+<div class="main">
+  <div id="appRoot"><div id="loading">Загрузка...</div></div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://dbkevxvpyhprmzrrceic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2Z3gto'
+);
+
+let USER = null, PROFILE = null, INDUSTRIES = [];
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return window.location.href = 'auth.html';
+  USER = session.user;
+
+  const { data: prof } = await sb.from('profiles').select('*').eq('id', USER.id).single();
+  PROFILE = prof || { surveys_completed: 0 };
+
+  const name = USER.user_metadata?.username || USER.email?.split('@')[0] || 'Пользователь';
+  document.getElementById('userLabel').textContent = name;
+
+  const { data: industries } = await sb.from('industries').select('*').order('id');
+  INDUSTRIES = industries || [];
+
+  render();
+}
+
+function render() {
+  const root = document.getElementById('appRoot');
+  const completed = PROFILE?.surveys_completed || 0;
+  const canCreate = completed >= 2;
+
+  if (!canCreate) {
+    const done = Math.min(completed, 2);
+    root.innerHTML = `
+      <div class="hero-banner">
+        <div class="hero-banner__icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F4B183" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h2>Доступ заблокирован</h2>
+          <p>Чтобы создать свой опрос, нужно сначала пройти 2 опроса других участников.</p>
+        </div>
+      </div>
+      <div class="lock-card">
+        <div class="progress-mini">
+          <div class="pm-step ${done >= 1 ? 'pm-done' : 'pm-todo'}">${done >= 1 ? '✓' : '1'}</div>
+          <span class="pm-label">Опрос 1</span>
+          <div class="pm-step ${done >= 2 ? 'pm-done' : 'pm-todo'}">${done >= 2 ? '✓' : '2'}</div>
+          <span class="pm-label">Опрос 2</span>
+        </div>
+        <h2>Пройдено ${done} из 2 опросов</h2>
+        <p>Перейдите к прохождению опросов. После завершения кнопка «Создать свой опрос» станет активной автоматически.</p>
+        <button class="lock-btn" onclick="window.location.href='surveys.html'">Перейти к опросам</button>
+      </div>`;
+    return;
+  }
+
+  root.innerHTML = `
+    <div class="hero-banner">
+      <div class="hero-banner__icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F4B183" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <div>
+        <h2>Создайте свой опрос</h2>
+        <p>Сформулируйте гипотезу: выберите отрасль, дайте название и задайте 5 вопросов с ответами ДА/НЕТ.</p>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="form-head">
+        <h3>Шаблон опроса</h3>
+        <p>Заполните все поля — после отправки опрос появится в пуле вашей отрасли</p>
+      </div>
+      <div class="form-body">
+        <div class="form-group">
+          <div class="form-label">Отрасль <span class="tag">обязательно</span></div>
+          <select class="industry-select" id="indSelect">
+            <option value="">— выберите отрасль —</option>
+            ${INDUSTRIES.map(i => `<option value="${i.id}">${i.icon} ${i.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Наименование запроса <span class="tag">обязательно</span></div>
+          <input class="form-input" id="surveyTitle" type="text" placeholder="Например: Предпочтения потребителей при выборе ...">
+        </div>
+        <div class="form-group">
+          <div class="form-label">5 вопросов с ответами ДА / НЕТ</div>
+          <div class="questions-block">
+            ${[1,2,3,4,5].map(n => `
+              <div class="q-row">
+                <span class="q-num">0${n}</span>
+                <textarea class="q-input" id="q${n}" placeholder="ВОПРОС № ${n}" rows="2"></textarea>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <button class="submit-btn" id="submitBtn" onclick="submitSurvey()">
+          ФОРМИРОВАНИЕ ОПРОСА ЗАВЕРШЕНО
+        </button>
+      </div>
+    </div>`;
+}
+
+async function submitSurvey() {
+  const industryId = document.getElementById('indSelect').value;
+  const title = document.getElementById('surveyTitle').value.trim();
+  const questions = [1,2,3,4,5].map(n => document.getElementById('q' + n).value.trim());
+
+  if (!industryId) return alert('Выберите отрасль');
+  if (!title) return alert('Введите название опроса');
+  if (questions.some(q => !q)) return alert('Заполните все 5 вопросов');
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Сохранение...';
+
+  // Insert survey
+  const { data: svData, error: svErr } = await sb.from('surveys')
+    .insert({ user_id: USER.id, industry_id: parseInt(industryId), title, is_system: false })
+    .select('id').single();
+
+  if (svErr) { btn.disabled = false; btn.textContent = 'ФОРМИРОВАНИЕ ОПРОСА ЗАВЕРШЕНО'; alert('Ошибка: ' + svErr.message); return; }
+
+  // Insert questions
+  const qs = questions.map((text, i) => ({ survey_id: svData.id, order_num: i + 1, text }));
+  const { error: qErr } = await sb.from('questions').insert(qs);
+
+  if (qErr) { btn.disabled = false; btn.textContent = 'ФОРМИРОВАНИЕ ОПРОСА ЗАВЕРШЕНО'; alert('Ошибка вопросов: ' + qErr.message); return; }
+
+  // Show success
+  document.getElementById('appRoot').innerHTML = `
+    <div class="success-card">
+      <div style="width:72px;height:72px;border-radius:50%;background:rgba(0,165,81,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00A551" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2>ФОРМИРОВАНИЕ ОПРОСА ЗАВЕРШЕНО</h2>
+      <p>Ваш опрос помещён в базу данных для отрасли «${INDUSTRIES.find(i=>i.id==industryId)?.name}». Другие участники начнут отвечать на ваши вопросы. Следите за результатами в личном кабинете.</p>
+      <div class="success-btns">
+        <button class="big-btn" onclick="window.location.href='cabinet.html'">Перейти в кабинет</button>
+      </div>
+    </div>`;
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = 'auth.html';
+}
+
+init();
+</script>
+</body>
+</html>

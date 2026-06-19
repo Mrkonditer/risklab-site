@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — ППРГ RiskLab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap&subset=cyrillic,latin" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #6B1A5E; --ink-dark: #4A1242;
+      --orange: #F4B183; --green: #00A551; --red: #ED1C24;
+      --slate-100: #F1F3F6; --slate-200: #E2E6EC;
+      --slate-400: #8D99A8; --slate-600: #4E5A68;
+      --border: #E2E6EC; --r: 12px;
+    }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--slate-100); color: #16181d; min-height: 100vh; display: flex; flex-direction: column; }
+    a { color: inherit; text-decoration: none; }
+
+    .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 0 28px; height: 64px; display: flex; align-items: center; gap: 16px; }
+    .topbar img { height: 48px; }
+    .topbar__title { font-size: 13px; font-weight: 600; color: var(--slate-600); margin-left: 4px; }
+    .topbar__back { margin-left: auto; font-size: 13px; color: var(--slate-600); display: flex; align-items: center; gap: 6px; padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px; }
+    .topbar__back:hover { background: var(--slate-100); }
+
+    .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .card { background: #fff; border-radius: 20px; border: 1.5px solid var(--border); width: 100%; max-width: 440px; overflow: hidden; }
+    .card__head { background: var(--ink); padding: 32px 36px 28px; }
+    .card__badge { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--orange); margin-bottom: 10px; }
+    .card__head h1 { font-size: 22px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .card__head p { font-size: 13.5px; color: rgba(255,255,255,0.65); margin-top: 8px; }
+    .card__body { padding: 32px 36px; }
+
+    .tabs { display: flex; gap: 0; background: var(--slate-100); border-radius: 10px; padding: 4px; margin-bottom: 28px; }
+    .tab { flex: 1; text-align: center; padding: 9px; font-size: 13.5px; font-weight: 600; border-radius: 8px; cursor: pointer; color: var(--slate-600); transition: all 140ms; }
+    .tab.active { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--slate-600); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+    input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; transition: border-color 150ms; background: #fff; }
+    input:focus { border-color: var(--ink); }
+    input::placeholder { color: var(--slate-400); }
+
+    .hint { font-size: 12px; color: var(--slate-400); margin-top: 6px; }
+
+    .btn-primary { width: 100%; padding: 14px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; transition: opacity 150ms; margin-top: 8px; }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Login path selector */
+    .path-selector { display: none; flex-direction: column; gap: 12px; margin-top: 8px; }
+    .path-btn { width: 100%; padding: 16px; border: 1.5px solid var(--border); border-radius: 10px; background: #fff; font-family: inherit; cursor: pointer; text-align: left; transition: all 140ms; }
+    .path-btn:hover { border-color: var(--ink); background: rgba(107,26,94,0.04); }
+    .path-btn strong { display: block; font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+    .path-btn span { font-size: 12.5px; color: var(--slate-600); line-height: 1.5; }
+
+    .msg { padding: 12px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 500; margin-top: 16px; display: none; }
+    .msg.error { background: rgba(237,28,36,0.08); color: var(--red); border: 1px solid rgba(237,28,36,0.2); }
+    .msg.success { background: rgba(0,165,81,0.08); color: var(--green); border: 1px solid rgba(0,165,81,0.2); }
+
+    footer { text-align: center; padding: 24px; font-size: 12.5px; color: var(--slate-400); }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../index.html"><img src="../assets/logo-trademark.png" alt="RiskLab"></a>
+  <span class="topbar__title">Платформа ППРГ</span>
+  <a href="../index.html" class="topbar__back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    На главную
+  </a>
+</div>
+
+<div class="main">
+  <div class="card">
+    <div class="card__head">
+      <div class="card__badge">ППРГ · RiskLab</div>
+      <h1>Войдите в платформу</h1>
+      <p>Проверка рыночных гипотез — регистрация или вход</p>
+    </div>
+    <div class="card__body">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('login')">Войти</div>
+        <div class="tab" onclick="switchTab('register')">Регистрация</div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="example@email.ru" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div id="loginMsg" class="msg"></div>
+
+        <!-- After credentials verified, show path selector -->
+        <div id="pathSelector" class="path-selector">
+          <div class="path-btn" onclick="loginWithPath('create')">
+            <strong>ВХОД ДЛЯ СОЗДАНИЯ ОПРОСА</strong>
+            <span>Пройдите 2 чужих опроса и создайте собственный для проверки гипотезы</span>
+          </div>
+          <div class="path-btn" onclick="loginWithPath('monitor')">
+            <strong>ВХОД ДЛЯ МОНИТОРИНГА</strong>
+            <span>Просматривайте результаты своих опросов в личном кабинете</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="loginBtn" onclick="handleLogin()">Войти</button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div id="registerForm" style="display:none">
+        <div class="form-group">
+          <label>Имя пользователя</label>
+          <input type="text" id="regUsername" placeholder="ваш_логин" autocomplete="username">
+          <p class="hint">Только латинские буквы, цифры и _</p>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="example@email.ru" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label>Пароль</label>
+          <input type="password" id="regPassword" placeholder="Минимум 8 символов" autocomplete="new-password">
+        </div>
+        <div id="regMsg" class="msg"></div>
+        <button class="btn-primary" id="regBtn" onclick="handleRegister()">Зарегистрироваться</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 ООО «Лаборатория риска» · ППРГ v1.0</footer>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://dbkevxvpyhprmzrrceic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2R3gto'
+);
+
+// Redirect if already logged in
+sb.auth.getSession().then(({ data }) => {
+  if (data.session) {
+    const dest = sessionStorage.getItem('pprg_path') || 'surveys.html';
+    window.location.href = dest;
+  }
+});
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'login')));
+  document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  el.style.display = 'block';
+}
+
+let credentialsVerified = false;
+
+async function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) return showMsg('loginMsg', 'error', 'Введите email и пароль');
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Проверка...';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    btn.disabled = false; btn.textContent = 'Войти';
+    const msg = error.message.includes('Invalid') ? 'ВВЕДИТЕ ПРАВИЛЬНЫЙ ЛОГИН И ПАРОЛЬ' : error.message;
+    return showMsg('loginMsg', 'error', msg);
+  }
+
+  // Show path selector
+  document.getElementById('loginMsg').style.display = 'none';
+  document.getElementById('pathSelector').style.display = 'flex';
+  btn.style.display = 'none';
+  credentialsVerified = true;
+}
+
+function loginWithPath(path) {
+  sessionStorage.setItem('pprg_path', path === 'create' ? 'surveys.html' : 'cabinet.html');
+  window.location.href = path === 'create' ? 'surveys.html' : 'cabinet.html';
+}
+
+async function handleRegister() {
+  const username = document.getElementById('regUsername').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+
+  if (!username || !email || !password) return showMsg('regMsg', 'error', 'Заполните все поля');
+  if (password.length < 8) return showMsg('regMsg', 'error', 'Пароль — минимум 8 символов');
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) return showMsg('regMsg', 'error', 'Имя пользователя: только буквы, цифры и _');
+
+  const btn = document.getElementById('regBtn');
+  btn.disabled = true; btn.textContent = 'Регистрация...';
+
+  const { error } = await sb.auth.signUp({
+    email, password,
+    options: { data: { username } }
+  });
+
+  btn.disabled = false; btn.textContent = 'Зарегистрироваться';
+
+  if (error) {
+    const msg = error.message.includes('already') ? 'Этот email уже зарегистрирован. ПРОЙДИТЕ АВТОРИЗАЦИЮ.' : error.message;
+    return showMsg('regMsg', 'error', msg);
+  }
+
+  showMsg('regMsg', 'success', 'Регистрация успешна! Проверьте email для подтверждения, затем войдите.');
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('loginForm').style.display !== 'none' && !credentialsVerified) handleLogin();
+    if (document.getElementById('registerForm').style.display !== 'none') handleRegister();
+  }
+});
+</script>
+</body>
+</html>

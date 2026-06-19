@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Прохождение опросов — ППРГ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap&subset=cyrillic,latin" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --ink: #6B1A5E; --ink-dark: #4A1242;
+      --orange: #F4B183; --green: #00A551; --red: #ED1C24;
+      --slate-100: #F1F3F6; --slate-200: #E2E6EC;
+      --slate-400: #8D99A8; --slate-600: #4E5A68;
+      --border: #E2E6EC;
+    }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: var(--slate-100); color: #16181d; min-height: 100vh; }
+    a { color: inherit; text-decoration: none; }
+
+    /* TOPBAR */
+    .topbar { background: #fff; border-bottom: 1px solid var(--border); padding: 0 28px; height: 64px; display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 50; }
+    .topbar img { height: 48px; }
+    .topbar__sep { width: 1px; height: 28px; background: var(--border); }
+    .topbar__title { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+    .topbar__user { margin-left: auto; font-size: 13px; color: var(--slate-600); display: flex; align-items: center; gap: 10px; }
+    .topbar__logout { font-size: 12.5px; padding: 5px 12px; border: 1px solid var(--border); border-radius: 7px; cursor: pointer; background: none; font-family: inherit; color: var(--slate-600); }
+    .topbar__logout:hover { background: var(--slate-100); }
+
+    /* PROGRESS BAR */
+    .progress-bar { background: var(--ink); padding: 16px 28px; display: flex; align-items: center; gap: 20px; }
+    .prog-step { display: flex; align-items: center; gap: 8px; }
+    .prog-circle { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .prog-circle.done { background: var(--green); color: #fff; }
+    .prog-circle.active { background: var(--orange); color: var(--ink); }
+    .prog-circle.inactive { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.4); }
+    .prog-label { font-size: 12.5px; font-weight: 500; color: rgba(255,255,255,0.8); }
+    .prog-label.inactive { color: rgba(255,255,255,0.35); }
+    .prog-arrow { color: rgba(255,255,255,0.3); font-size: 16px; }
+
+    /* MAIN */
+    .main { max-width: 720px; margin: 0 auto; padding: 36px 20px 60px; }
+
+    /* INDUSTRY SELECT */
+    .select-card { background: #fff; border-radius: 18px; border: 1.5px solid var(--border); padding: 36px; }
+    .select-card h2 { font-size: 21px; font-weight: 700; margin-bottom: 8px; }
+    .select-card p { font-size: 14.5px; color: var(--slate-600); margin-bottom: 24px; line-height: 1.6; }
+    .industry-select { width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; outline: none; cursor: pointer; appearance: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238D99A8' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center; }
+    .industry-select:focus { border-color: var(--ink); }
+    .start-btn { margin-top: 20px; width: 100%; padding: 14px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 150ms; }
+    .start-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .start-btn:not(:disabled):hover { opacity: 0.87; }
+
+    /* SURVEY CARD */
+    .survey-card { background: #fff; border-radius: 18px; border: 1.5px solid var(--border); overflow: hidden; }
+    .survey-head { background: var(--ink); padding: 24px 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+    .survey-head h2 { font-size: 17px; font-weight: 700; color: #fff; line-height: 1.35; flex: 1; }
+    .survey-badge { font-size: 11px; font-family: 'IBM Plex Mono', monospace; font-weight: 600; background: rgba(255,255,255,0.12); color: var(--orange); padding: 4px 12px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+    .survey-body { padding: 28px 32px; }
+    .survey-name { background: var(--slate-100); border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; }
+    .survey-name span { font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate-400); display: block; margin-bottom: 4px; font-family: 'IBM Plex Mono', monospace; }
+    .survey-name strong { font-size: 15px; font-weight: 600; color: var(--ink); }
+
+    .question-row { padding: 16px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 14px; }
+    .question-row:last-of-type { border-bottom: none; }
+    .q-num { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--slate-400); min-width: 22px; }
+    .q-text { flex: 1; font-size: 14.5px; line-height: 1.55; }
+    .q-btns { display: flex; gap: 8px; flex-shrink: 0; }
+    .q-btn { padding: 7px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; border: 1.5px solid; transition: all 120ms; font-family: inherit; }
+    .q-btn--yes { border-color: var(--green); color: var(--green); background: rgba(0,165,81,0.06); }
+    .q-btn--yes.selected, .q-btn--yes:hover { background: var(--green); color: #fff; }
+    .q-btn--no  { border-color: var(--red); color: var(--red); background: rgba(237,28,36,0.06); }
+    .q-btn--no.selected, .q-btn--no:hover  { background: var(--red); color: #fff; }
+
+    .survey-footer { padding: 20px 32px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .answered-count { font-size: 13px; color: var(--slate-600); font-family: 'IBM Plex Mono', monospace; }
+    .submit-btn { padding: 12px 28px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 14.5px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 150ms; }
+    .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .submit-btn:not(:disabled):hover { opacity: 0.87; }
+
+    /* DONE STATES */
+    .done-card { background: #fff; border-radius: 18px; border: 1.5px solid var(--border); padding: 48px 36px; text-align: center; }
+    .done-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(0,165,81,0.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .done-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    .done-card p { font-size: 15px; color: var(--slate-600); margin-bottom: 28px; line-height: 1.6; }
+    .done-card .big-btn { padding: 14px 32px; background: var(--ink); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; }
+    .done-card .big-btn:hover { opacity: 0.87; }
+    .done-card .sec-btn { padding: 14px 32px; background: rgba(107,26,94,0.08); color: var(--ink); border: 1.5px solid var(--ink); border-radius: 10px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-left: 12px; }
+    .sec-btn:hover { background: rgba(107,26,94,0.15); }
+
+    #loading { text-align: center; padding: 60px 20px; color: var(--slate-400); font-size: 15px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="../index.html"><img src="../assets/logo-trademark.png" alt="RiskLab"></a>
+  <div class="topbar__sep"></div>
+  <span class="topbar__title">Прохождение опросов</span>
+  <div class="topbar__user">
+    <span id="userLabel"></span>
+    <button class="topbar__logout" onclick="logout()">Выйти</button>
+  </div>
+</div>
+
+<div class="progress-bar">
+  <div class="prog-step">
+    <div class="prog-circle active" id="prog1">1</div>
+    <span class="prog-label" id="prog1L">Выбор отрасли</span>
+  </div>
+  <div class="prog-arrow">›</div>
+  <div class="prog-step">
+    <div class="prog-circle inactive" id="prog2">2</div>
+    <span class="prog-label inactive" id="prog2L">Опрос 1 из 2</span>
+  </div>
+  <div class="prog-arrow">›</div>
+  <div class="prog-step">
+    <div class="prog-circle inactive" id="prog3">3</div>
+    <span class="prog-label inactive" id="prog3L">Опрос 2 из 2</span>
+  </div>
+  <div class="prog-arrow">›</div>
+  <div class="prog-step">
+    <div class="prog-circle inactive" id="prog4">✓</div>
+    <span class="prog-label inactive" id="prog4L">Создать свой</span>
+  </div>
+</div>
+
+<div class="main" id="appRoot">
+  <div id="loading">Загрузка...</div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://dbkevxvpyhprmzrrceic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2Z3gto'
+);
+
+let USER = null, PROFILE = null, INDUSTRIES = [], SURVEYS = [];
+let state = { step: 'select', industryId: null, surveyIdx: 0, answers: [{}, {}], surveysForIndustry: [] };
+
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return window.location.href = 'auth.html';
+  USER = session.user;
+
+  const { data: prof } = await sb.from('profiles').select('*').eq('id', USER.id).single();
+  PROFILE = prof || { surveys_completed: 0 };
+
+  const name = USER.user_metadata?.username || USER.email?.split('@')[0] || 'Пользователь';
+  document.getElementById('userLabel').textContent = name;
+
+  // If already completed 2+ surveys, redirect to create
+  if (PROFILE.surveys_completed >= 2) {
+    window.location.href = 'create.html';
+    return;
+  }
+
+  const { data: industries } = await sb.from('industries').select('*').order('id');
+  INDUSTRIES = industries || [];
+
+  render();
+}
+
+function setProgress(active) {
+  [1,2,3,4].forEach(i => {
+    const c = document.getElementById('prog' + i);
+    const l = document.getElementById('prog' + i + 'L');
+    if (i < active) { c.className = 'prog-circle done'; c.textContent = '✓'; l.className = 'prog-label'; }
+    else if (i === active) { c.className = 'prog-circle active'; c.textContent = i < 4 ? i : '✓'; l.className = 'prog-label'; }
+    else { c.className = 'prog-circle inactive'; c.textContent = i < 4 ? i : '✓'; l.className = 'prog-label inactive'; }
+  });
+}
+
+function render() {
+  const root = document.getElementById('appRoot');
+
+  if (state.step === 'select') {
+    setProgress(1);
+    root.innerHTML = `
+      <div class="select-card">
+        <h2>Выберите отрасль</h2>
+        <p>Укажите вид экономической деятельности, в котором у вас есть опыт. Вам предстоит ответить на 2 опроса других участников из этой отрасли, после чего вы сможете создать собственный.</p>
+        <select class="industry-select" id="indSelect" onchange="document.getElementById('startBtn').disabled=!this.value">
+          <option value="">— выберите отрасль —</option>
+          ${INDUSTRIES.map(i => `<option value="${i.id}">${i.icon} ${i.name}</option>`).join('')}
+        </select>
+        <button class="start-btn" id="startBtn" disabled onclick="selectIndustry()">
+          НАЧАТЬ ПРОХОЖДЕНИЕ ОПРОСОВ
+        </button>
+      </div>`;
+
+  } else if (state.step === 'survey') {
+    const surveyNum = state.surveyIdx + 1;
+    setProgress(surveyNum + 1);
+    const sv = state.surveysForIndustry[state.surveyIdx];
+    if (!sv) { render_done(); return; }
+
+    const answers = state.answers[state.surveyIdx];
+    const answeredCount = Object.keys(answers).length;
+
+    root.innerHTML = `
+      <div class="survey-card">
+        <div class="survey-head">
+          <h2>${sv.title}</h2>
+          <div class="survey-badge">ОПРОС ${surveyNum} из 2</div>
+        </div>
+        <div class="survey-body">
+          <div class="survey-name">
+            <span>НАИМЕНОВАНИЕ ЗАПРОСА</span>
+            <strong>${sv.title}</strong>
+          </div>
+          ${sv.questions.map((q, qi) => `
+            <div class="question-row" id="qrow${qi}">
+              <span class="q-num">0${qi+1}</span>
+              <span class="q-text">${q.text}</span>
+              <div class="q-btns">
+                <button class="q-btn q-btn--yes ${answers[qi+1] === true ? 'selected' : ''}"
+                  onclick="answer(${qi+1}, true)">ДА</button>
+                <button class="q-btn q-btn--no  ${answers[qi+1] === false ? 'selected' : ''}"
+                  onclick="answer(${qi+1}, false)">НЕТ</button>
+              </div>
+            </div>`).join('')}
+        </div>
+        <div class="survey-footer">
+          <span class="answered-count">Отвечено: ${answeredCount}/5</span>
+          <button class="submit-btn" id="submitBtn" ${answeredCount < 5 ? 'disabled' : ''} onclick="submitSurvey()">
+            ОПРОС ЗАВЕРШЁН →
+          </button>
+        </div>
+      </div>`;
+
+  } else if (state.step === 'survey1done') {
+    setProgress(3);
+    root.innerHTML = `
+      <div class="done-card">
+        <div class="done-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00A551" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>ОПРОС ЗАВЕРШЁН</h2>
+        <p>Отлично! Первый опрос пройден. Осталось ответить ещё на один опрос, после чего вы сможете создать свой.</p>
+        <button class="big-btn" onclick="startNextSurvey()">НАЧАТЬ ПРОХОЖДЕНИЕ ОПРОСА 2 из 2</button>
+      </div>`;
+
+  } else if (state.step === 'alldone') {
+    setProgress(4);
+    root.innerHTML = `
+      <div class="done-card">
+        <div class="done-icon" style="background:rgba(107,26,94,0.1)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B1A5E" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2>ОБА ОПРОСА ПРОЙДЕНЫ</h2>
+        <p>Вы успешно прошли 2 опроса. Теперь доступно создание собственного опроса для проверки вашей рыночной гипотезы.</p>
+        <button class="big-btn" onclick="window.location.href='create.html'">СОЗДАТЬ СВОЙ ОПРОС</button>
+        <button class="sec-btn" onclick="window.location.href='cabinet.html'">Перейти в кабинет</button>
+      </div>`;
+  }
+}
+
+async function selectIndustry() {
+  const id = parseInt(document.getElementById('indSelect').value);
+  state.industryId = id;
+
+  // Load 2 system surveys for this industry that user hasn't answered
+  const { data: svs } = await sb.from('surveys')
+    .select('id, title, questions(id, order_num, text)')
+    .eq('industry_id', id)
+    .eq('is_system', true)
+    .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(2);
+
+  if (!svs || svs.length < 2) {
+    alert('Нет опросов для этой отрасли. Выберите другую.');
+    return;
+  }
+
+  // Sort questions
+  state.surveysForIndustry = svs.map(sv => ({
+    ...sv,
+    questions: (sv.questions || []).sort((a, b) => a.order_num - b.order_num)
+  }));
+  state.surveyIdx = 0;
+  state.step = 'survey';
+  render();
+}
+
+function answer(qNum, value) {
+  state.answers[state.surveyIdx][qNum] = value;
+  // Re-render just the question row buttons and counter
+  const sv = state.surveysForIndustry[state.surveyIdx];
+  const answers = state.answers[state.surveyIdx];
+  sv.questions.forEach((q, qi) => {
+    const yes = document.querySelector(`#qrow${qi} .q-btn--yes`);
+    const no  = document.querySelector(`#qrow${qi} .q-btn--no`);
+    if (!yes) return;
+    yes.className = 'q-btn q-btn--yes' + (answers[qi+1] === true  ? ' selected' : '');
+    no.className  = 'q-btn q-btn--no'  + (answers[qi+1] === false ? ' selected' : '');
+  });
+  const cnt = Object.keys(answers).length;
+  document.querySelector('.answered-count').textContent = `Отвечено: ${cnt}/5`;
+  document.getElementById('submitBtn').disabled = cnt < 5;
+}
+
+async function submitSurvey() {
+  const sv = state.surveysForIndustry[state.surveyIdx];
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true; btn.textContent = 'Сохранение...';
+
+  const { error } = await sb.from('responses').insert({
+    survey_id: sv.id,
+    user_id: USER.id,
+    answers: state.answers[state.surveyIdx]
+  });
+
+  if (error && !error.message.includes('unique')) {
+    btn.disabled = false; btn.textContent = 'ОПРОС ЗАВЕРШЁН →';
+    alert('Ошибка: ' + error.message);
+    return;
+  }
+
+  if (state.surveyIdx === 0) {
+    state.step = 'survey1done';
+  } else {
+    state.step = 'alldone';
+    // Refresh profile
+    const { data: prof } = await sb.from('profiles').select('*').eq('id', USER.id).single();
+    PROFILE = prof;
+  }
+  render();
+}
+
+function startNextSurvey() {
+  state.surveyIdx = 1;
+  state.step = 'survey';
+  render();
+}
+
+async function logout() {
+  await sb.auth.signOut();
+  window.location.href = 'auth.html';
+}
+
+init();
+</script>
+</body>
+</html>

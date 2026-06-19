@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Подтверждение — ППРГ RiskLab</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap&subset=cyrillic,latin" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'IBM Plex Sans', sans-serif; background: #F1F3F6; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    .card { background: #fff; border-radius: 20px; border: 1.5px solid #E2E6EC; padding: 52px 40px; text-align: center; max-width: 420px; width: 100%; margin: 20px; }
+    .icon { width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+    h2 { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+    p { font-size: 15px; color: #4E5A68; line-height: 1.65; margin-bottom: 28px; }
+    .btn { display: inline-block; padding: 13px 28px; background: #6B1A5E; color: #fff; border-radius: 10px; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; font-family: inherit; }
+    .btn:hover { opacity: 0.87; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #E2E6EC; border-top-color: #6B1A5E; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 24px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="spinner"></div>
+  <h2>Подтверждение...</h2>
+  <p>Завершаем регистрацию, подождите секунду.</p>
+</div>
+
+<script>
+const sb = supabase.createClient(
+  'https://dbkevxvpyhprmzrrceic.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRia2V2eHZweWhwcm16cnJjZWljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Njc2MDYsImV4cCI6MjA5NzQ0MzYwNn0.EyDnQE9uw0rWHUhpTJiEMTh4UzaGA3gAqIR1Y2R3gto'
+);
+
+async function handleConfirm() {
+  const card = document.getElementById('card');
+
+  // Supabase puts tokens in the URL hash: #access_token=...&type=signup
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  const accessToken  = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  const type         = params.get('type'); // signup | recovery | email_change
+
+  if (!accessToken) {
+    // Maybe already handled, or no token — check session
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      showSuccess(session.user);
+    } else {
+      showError('Ссылка недействительна или уже использована.');
+    }
+    return;
+  }
+
+  // Exchange tokens
+  const { data, error } = await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+
+  if (error) {
+    showError(error.message);
+    return;
+  }
+
+  showSuccess(data.user);
+}
+
+function showSuccess(user) {
+  const name = user?.user_metadata?.username || user?.email?.split('@')[0] || 'Пользователь';
+  document.getElementById('card').innerHTML = `
+    <div class="icon" style="background:rgba(0,165,81,0.1)">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00A551" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h2>Email подтверждён!</h2>
+    <p>Добро пожаловать, <strong>${name}</strong>!<br>Аккаунт активирован. Войдите в платформу.</p>
+    <a href="auth.html" class="btn">Войти в платформу</a>`;
+
+  // Auto-redirect after 2s
+  setTimeout(() => window.location.href = 'auth.html', 2500);
+}
+
+function showError(msg) {
+  document.getElementById('card').innerHTML = `
+    <div class="icon" style="background:rgba(237,28,36,0.08)">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ED1C24" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <h2>Что-то пошло не так</h2>
+    <p>${msg}</p>
+    <a href="auth.html" class="btn">Вернуться к входу</a>`;
+}
+
+handleConfirm();
+</script>
+</body>
+</html>

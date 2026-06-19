@@ -246,25 +246,43 @@ function render() {
 
   } else if (state.step === 'alldone') {
     setProgress(4);
-    root.innerHTML = `
-      <div class="done-card">
-        <div class="done-icon" style="background:rgba(107,26,94,0.1)">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B1A5E" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-        </div>
-        <h2>ОБА ОПРОСА ПРОЙДЕНЫ</h2>
-        <p>Вы успешно прошли 2 опроса. Теперь доступно создание собственного опроса для проверки вашей рыночной гипотезы.</p>
+    const isAnswerMode = new URLSearchParams(location.search).get('mode') === 'answer';
 
-        <div style="background:rgba(107,26,94,0.06);border:1.5px solid rgba(107,26,94,0.15);border-radius:14px;padding:20px 22px;margin:20px 0;text-align:left">
-          <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B1A5E;margin-bottom:10px">⚡ Как работает продвижение</div>
-          <div style="font-size:13.5px;color:#16181d;line-height:1.7">
-            Ваш опрос показывается другим участникам <strong>в первую очередь</strong>, пока вы сами активно отвечаете на чужие.<br><br>
-            Перестали отвечать — опрос уходит в конец очереди. Чем активнее вы участвуете в платформе, тем больше ответов получает ваша гипотеза.
+    if (isAnswerMode) {
+      root.innerHTML = `
+        <div class="done-card">
+          <div class="done-icon" style="background:rgba(0,165,81,0.1)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00A551" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-        </div>
+          <h2>СПАСИБО ЗА УЧАСТИЕ!</h2>
+          <p>Вы ответили на 2 опроса других участников. Ваш приоритет в очереди обновлён — ваш опрос будет показан активным участникам в первую очередь.</p>
+          <div style="background:rgba(0,165,81,0.06);border:1.5px solid rgba(0,165,81,0.2);border-radius:14px;padding:16px 20px;margin:16px 0;font-size:13.5px;color:#16181d;line-height:1.65">
+            ⚡ Чем активнее вы отвечаете на чужие опросы, тем выше ваш опрос в очереди показа.
+          </div>
+          <button class="big-btn" onclick="window.location.href='cabinet.html'">Перейти в кабинет</button>
+          <button class="sec-btn" onclick="location.reload()">Ответить ещё</button>
+        </div>`;
+    } else {
+      root.innerHTML = `
+        <div class="done-card">
+          <div class="done-icon" style="background:rgba(107,26,94,0.1)">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B1A5E" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2>ОБА ОПРОСА ПРОЙДЕНЫ</h2>
+          <p>Вы успешно прошли 2 опроса. Теперь доступно создание собственного опроса для проверки вашей рыночной гипотезы.</p>
 
-        <button class="big-btn" onclick="window.location.href='create.html'">СОЗДАТЬ СВОЙ ОПРОС</button>
-        <button class="sec-btn" onclick="window.location.href='cabinet.html'">Перейти в кабинет</button>
-      </div>`;
+          <div style="background:rgba(107,26,94,0.06);border:1.5px solid rgba(107,26,94,0.15);border-radius:14px;padding:20px 22px;margin:20px 0;text-align:left">
+            <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#6B1A5E;margin-bottom:10px">⚡ Как работает продвижение</div>
+            <div style="font-size:13.5px;color:#16181d;line-height:1.7">
+              Ваш опрос показывается другим участникам <strong>в первую очередь</strong>, пока вы сами активно отвечаете на чужие.<br><br>
+              Перестали отвечать — опрос уходит в конец очереди. Чем активнее вы участвуете в платформе, тем больше ответов получает ваша гипотеза.
+            </div>
+          </div>
+
+          <button class="big-btn" onclick="window.location.href='create.html'">СОЗДАТЬ СВОЙ ОПРОС</button>
+          <button class="sec-btn" onclick="window.location.href='cabinet.html'">Перейти в кабинет</button>
+        </div>`;
+    }
   }
 }
 

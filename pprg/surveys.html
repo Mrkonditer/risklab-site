@@ -138,6 +138,7 @@ const sb = createClient(
 );
 
 let USER = null, PROFILE = null, INDUSTRIES = [], SURVEYS = [];
+let INITIAL_SURVEYS_COMPLETED = 0;
 let state = { step: 'select', industryId: null, surveyIdx: 0, answers: [{}, {}], surveysForIndustry: [] };
 
 async function init() {
@@ -147,6 +148,7 @@ async function init() {
 
   const { data: prof } = await sb.from('profiles').select('*').eq('id', USER.id).single();
   PROFILE = prof || { surveys_completed: 0 };
+  INITIAL_SURVEYS_COMPLETED = PROFILE.surveys_completed;
 
   const name = USER.user_metadata?.username || USER.email?.split('@')[0] || 'Пользователь';
   document.getElementById('userLabel').textContent = name;
@@ -246,7 +248,7 @@ function render() {
 
   } else if (state.step === 'alldone') {
     setProgress(4);
-    const isAnswerMode = new URLSearchParams(location.search).get('mode') === 'answer';
+    const isAnswerMode = INITIAL_SURVEYS_COMPLETED >= 2;
 
     if (isAnswerMode) {
       root.innerHTML = `

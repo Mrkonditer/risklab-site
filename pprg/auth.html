@@ -99,6 +99,9 @@
           <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
         </div>
         <div id="loginMsg" class="msg"></div>
+        <div style="text-align:right;margin-top:8px;">
+          <a href="#" onclick="handleForgotPassword(event)" style="font-size:13px;color:var(--slate-400);text-decoration:underline;text-underline-offset:3px;">Забыли пароль?</a>
+        </div>
 
         <!-- After credentials verified, show path selector -->
         <div id="pathSelector" class="path-selector">
@@ -226,6 +229,17 @@ async function handleRegister() {
   }
 
   showMsg('regMsg', 'success', 'Регистрация успешна! Проверьте email для подтверждения, затем войдите.');
+}
+
+async function handleForgotPassword(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) return showMsg('loginMsg', 'error', 'Введите email в поле выше');
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://www.risk-laboratory.com/pprg/auth.html?reset=1'
+  });
+  if (error) return showMsg('loginMsg', 'error', error.message);
+  showMsg('loginMsg', 'success', 'Письмо со ссылкой для сброса пароля отправлено на ' + email);
 }
 
 // Enter key support

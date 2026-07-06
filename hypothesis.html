@@ -360,7 +360,7 @@
   <h1>Нужен ли твой продукт <span>рынку?</span></h1>
   <p class="hero__sub">Электронная платформа проверки рыночных гипотез — создай опрос для своей отрасли и получи реальные данные от участников рынка.</p>
   <div class="hero__btns">
-    <a href="pprg/auth.html" class="btn btn--primary">
+    <a href="pprg/auth.html" class="btn btn--primary" id="heroCta">
       Зарегистрироваться
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </a>
@@ -641,6 +641,11 @@ function applyAuth(session) {
     document.getElementById('ddName').textContent = name;
     document.getElementById('ddEmail').textContent = session.user.email;
     g.style.display = 'none'; u.style.display = 'block';
+    const heroBtn = document.getElementById('heroCta');
+    if (heroBtn) {
+      heroBtn.href = 'pprg/surveys.html';
+      heroBtn.innerHTML = 'Проверить гипотезу <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+    }
   } else {
     g.style.display = 'flex'; u.style.display = 'none';
   }

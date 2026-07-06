@@ -118,6 +118,17 @@
         <button class="btn-primary" id="loginBtn" onclick="handleLogin()">Войти</button>
       </div>
 
+      <!-- RESET PASSWORD FORM -->
+      <div id="resetForm" style="display:none">
+        <p style="font-size:14px;color:var(--slate-600);margin-bottom:20px;">Введите новый пароль для вашего аккаунта.</p>
+        <div class="form-group">
+          <label>Новый пароль</label>
+          <input type="password" id="newPassword" placeholder="Минимум 8 символов" autocomplete="new-password">
+        </div>
+        <div id="resetMsg" class="msg"></div>
+        <button class="btn-primary" onclick="handleResetPassword()">Сохранить новый пароль</button>
+      </div>
+
       <!-- REGISTER FORM -->
       <div id="registerForm" style="display:none">
         <div class="form-group">
@@ -153,13 +164,19 @@ const sb = createClient(
 const _tab = new URLSearchParams(location.search).get('tab');
 if (_tab === 'register') switchTab('register');
 
-// Redirect if already logged in
-sb.auth.getSession().then(({ data }) => {
-  if (data.session) {
-    const dest = sessionStorage.getItem('pprg_path') || 'surveys.html';
-    window.location.href = dest;
-  }
-});
+// Handle password recovery from email link
+const hashParams = new URLSearchParams(location.hash.slice(1));
+if (hashParams.get('type') === 'recovery') {
+  showResetForm();
+} else {
+  // Redirect if already logged in
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) {
+      const dest = sessionStorage.getItem('pprg_path') || 'surveys.html';
+      window.location.href = dest;
+    }
+  });
+}
 
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (i === 0) === (tab === 'login')));
@@ -229,6 +246,22 @@ async function handleRegister() {
   }
 
   showMsg('regMsg', 'success', 'Регистрация успешна! Проверьте email для подтверждения, затем войдите.');
+}
+
+function showResetForm() {
+  document.getElementById('loginForm').style.display = 'none';
+  document.getElementById('registerForm').style.display = 'none';
+  document.getElementById('resetForm').style.display = 'block';
+  document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+}
+
+async function handleResetPassword() {
+  const password = document.getElementById('newPassword').value;
+  if (password.length < 8) return showMsg('resetMsg', 'error', 'Пароль — минимум 8 символов');
+  const { error } = await sb.auth.updateUser({ password });
+  if (error) return showMsg('resetMsg', 'error', error.message);
+  showMsg('resetMsg', 'success', 'Пароль успешно изменён! Перенаправляем...');
+  setTimeout(() => window.location.href = 'cabinet.html', 2000);
 }
 
 async function handleForgotPassword(e) {
